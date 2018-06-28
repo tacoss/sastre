@@ -20,6 +20,8 @@ describe('User', () => {
       saveCallback = td.func('user.save');
 
       IF_OK = Symbol('IT_SHALL_NOT_PASS');
+
+      td.when(saveCallback()).thenReturn(IF_OK);
     });
 
     afterEach(() => {
@@ -31,9 +33,8 @@ describe('User', () => {
         some: 'INFO',
       };
 
-      td.when(saveCallback()).thenReturn(IF_OK);
       td.replace(User, 'create', createCallback);
-      td.when(User.create(input)).thenReturn({ save: saveCallback });
+      td.when(User.create(input)).thenResolve({ save: saveCallback });
 
       const result = await User.add(input);
 
@@ -46,15 +47,14 @@ describe('User', () => {
       // here we can use td.imitate(User) but it'll do a deep-mock, and we don't want that
       // we should be using a Repository-pattern here, just to mock that instead, e.g. td.imitate(UserRepo)
 
-      const UserMock = td.object({ create: td.func() });
-      const TokenMock = td.object({ create: td.func() });
+      const UserMock = td.imitate({ create() {} });
+      const TokenMock = td.imitate({ create() {} });
 
       const input = {
         foo: 'BAR',
       };
 
-      td.when(saveCallback()).thenReturn(IF_OK);
-      td.when(UserMock.create(input)).thenReturn({ save: saveCallback });
+      td.when(UserMock.create(input)).thenResolve({ save: saveCallback });
 
       const add = classMethods.add.factory({ User: UserMock, Token: TokenMock });
 
