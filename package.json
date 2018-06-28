@@ -1,0 +1,14 @@
+{
+  "name": "di-example",
+  "version": "0.0.0",
+  "description": "DI madness!",
+  "main": "lib/container.js",
+  "scripts": {
+    "test": "node example.js"
+  },
+  "author": "Alvaro Cabrera <pateketrueke@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "glob": "^7.1.2"
+  }
+}
