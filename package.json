@@ -4,11 +4,17 @@
   "description": "DI madness!",
   "main": "lib/container.js",
   "scripts": {
-    "test": "node example.js"
+    "start": "node example.js",
+    "test": "_mocha 'src/**/*.test.js'"
   },
   "author": "Alvaro Cabrera <pateketrueke@gmail.com>",
   "license": "MIT",
   "dependencies": {
     "glob": "^7.1.2"
+  },
+  "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "testdouble": "^3.8.1"
   }
 }
