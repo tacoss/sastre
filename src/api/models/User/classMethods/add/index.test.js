@@ -43,10 +43,11 @@ describe('User', () => {
     it('can mock through DI as expected', async () => {
       const { classMethods } = $.models.registry.User;
 
-      const Token = $.getModel('Token');
+      // here we can use td.imitate(User) but it'll do a deep-mock, and we don't want that
+      // we should be using a Repository-pattern here, just to mock that instead, e.g. td.imitate(UserRepo)
 
-      const UserMock = td.imitate(User);
-      const TokenMock = td.imitate(Token);
+      const UserMock = td.object({ create: td.func() });
+      const TokenMock = td.object({ create: td.func() });
 
       const input = {
         foo: 'BAR',

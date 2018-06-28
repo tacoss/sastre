@@ -4,14 +4,10 @@ const $ = new Container(__dirname);
 
 const User = $.getModel('User');
 
-console.log($.models.registry.User);
-console.log(User);
-
-console.log('>>>', User.create({ a: 'Dummy' }));
-
 Promise.resolve()
-  .then(() => User.classMethods.add({ foo: 'bar' }))
-  .then(console.log)
+  .then(() => User.sync({ force: true }))
+  .then(() => User.add({ name: 'Example' }))
+  .then(result => console.log(result.get()))
   .catch(console.log)
   .then(() => {
     const Token = $.getModel('Token');
