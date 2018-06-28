@@ -32,11 +32,10 @@ describe('User', () => {
       };
 
       td.when(saveCallback()).thenReturn(IF_OK);
-
       td.replace(User, 'create', createCallback);
       td.when(User.create(input)).thenReturn({ save: saveCallback });
 
-      const result = await User.classMethods.add(input);
+      const result = await User.add(input);
 
       result.should.be.eql(IF_OK);
     });

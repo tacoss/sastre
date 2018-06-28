@@ -1,11 +1,10 @@
+const Sequelize = require('sequelize');
+
 const User = {
-  create(userInfo) {
-    return {
-      ...userInfo,
-      save() {
-        return this;
-      },
-    };
+  attributes: {
+    name: {
+      type: Sequelize.STRING,
+    }
   },
 };
 
