@@ -1,12 +1,11 @@
-const Container = require('../../../../../../src/container');
+require('module-alias/register');
 
-const container = new Container();
-
-const User = container.getModel('User');
-
+const container = require('@src/container');
 const td = require('testdouble');
 
 require('chai').should();
+
+const User = container.getModel('User');
 
 describe('User', () => {
   describe('#add', () => {

@@ -1,6 +1,6 @@
-const Container = require('./src/container');
+require('module-alias/register');
 
-const container = new Container();
+const container = require('@src/container');
 
 const User = container.getModel('User');
 

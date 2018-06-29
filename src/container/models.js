@@ -1,12 +1,11 @@
-const Resolver = require('../lib/resolver');
+const Resolver = require('@lib/resolver');
 const Sequelize = require('sequelize');
-const path = require('path');
 
-const sequelize = new Sequelize('sqlite::memory:');
+class ModelsResolver {
+  constructor(modelsDir) {
+    this.sequelize = new Sequelize('sqlite::memory:');
 
-class Container {
-  constructor() {
-    this.models = new Resolver(path.resolve(__dirname, '../src/api/models'), this.decorateModel.bind(this));
+    return new Resolver(modelsDir, this.decorateModel.bind(this));
   }
 
   decorateModel(name, definition) {
@@ -19,7 +18,7 @@ class Container {
       // e.g. scanning models with json-schema-sequelizer, pregister them as classes
       // and then let the Resolver do his job...
 
-      const Model = sequelize.define(name, attributes || {}, fixedOptions);
+      const Model = this.sequelize.define(name, attributes || {}, fixedOptions);
 
       Object.assign(Model, classMethods);
       Object.assign(Model.prototype, instanceMethods);
@@ -27,10 +26,6 @@ class Container {
       return Model;
     }
   }
-
-  getModel(name) {
-    return this.models.get(name);
-  }
 }
 
-module.exports = Container;
+module.exports = ModelsResolver;
