@@ -19,7 +19,7 @@ const container = new Resolver(sourcesDirectory, optionalDecorator);
 
 ## Quick start
 
-Please see the [example.js]() file for a reference integration which includes:
+Please see the [example.js](example.js) file for a reference integration which includes:
 
 - Support for `module-alias`
 - Container interface for `models`:
