@@ -6,6 +6,17 @@ Currently this module is not available at NPM, however you can install it throug
 $ npm install agave/di-container --save
 ```
 
+Now, you can use the `Resolver` class:
+
+```js
+const { Resolver } = require('di-container');
+
+const optionalDecorator = (name, definition) => definition;
+const sourcesDirectory = `${__dirname}/lib`;
+
+const container = new Resolver(sourcesDirectory, optionalDecorator);
+```
+
 ## Quick start
 
 Please see the [example.js]() file for a reference integration which includes:
