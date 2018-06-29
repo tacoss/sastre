@@ -105,6 +105,6 @@ E.g. you want a `Session` object within a method.
 
 Using `Session(container) { ... }` is not enough clear, becase `Session(container)` says nothing.
 
-Instead, `getSession(container) { ... }` helps to understand to purpose of the method.
+Instead, `getSession(container) { ... }` helps to understand the purpose of the method... effectively.
 
 > The `get` prefix is always stripped out, so you can use `Session` or `getSession` and the identifier will remain the same.
