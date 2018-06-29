@@ -8,7 +8,7 @@
   ],
   "scripts": {
     "start": "node example.js",
-    "test": "_mocha 'test/**/*.test.js'",
+    "test": "_mocha 'test/*.test.js'",
     "test:example": "_mocha 'src/**/*.test.js'"
   },
   "author": "Alvaro Cabrera <pateketrueke@gmail.com>",
