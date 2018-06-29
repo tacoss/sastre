@@ -1,8 +1,8 @@
-const Container = require('./lib/container');
+const Container = require('./src/container');
 
-const $ = new Container(__dirname);
+const container = new Container();
 
-const User = $.getModel('User');
+const User = container.getModel('User');
 
 Promise.resolve()
   .then(() => User.sync({ force: true }))
@@ -10,7 +10,7 @@ Promise.resolve()
   .then(result => console.log(result.get()))
   .catch(console.log)
   .then(() => {
-    const Token = $.getModel('Token');
+    const Token = container.getModel('Token');
     const token = new Token();
 
     console.log('>>>', token instanceof Token, Token.create());

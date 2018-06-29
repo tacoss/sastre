@@ -1,8 +1,8 @@
-const Container = require('../../../../../../lib/container');
+const Container = require('../../../../../../src/container');
 
-const $ = new Container(process.cwd());
+const container = new Container();
 
-const User = $.getModel('User');
+const User = container.getModel('User');
 
 const td = require('testdouble');
 
@@ -42,10 +42,10 @@ describe('User', () => {
     });
 
     it('can mock through DI as expected', async () => {
-      const { classMethods } = $.models.registry.User;
+      const addFactory = require('.');
 
-      // here we can use td.imitate(User) but it'll do a deep-mock, and we don't want that
-      // we should be using a Repository-pattern here, just to mock that instead, e.g. td.imitate(UserRepo)
+      // here we can use td.imitate(User) but it'll do a deep-mock, and we don't want that...
+      // we could be using a Repository-pattern here, just to mock that instead, e.g. td.imitate(UserRepo)
 
       const UserMock = td.imitate({ create() {} });
       const TokenMock = td.imitate({ create() {} });
@@ -56,7 +56,7 @@ describe('User', () => {
 
       td.when(UserMock.create(input)).thenResolve({ save: saveCallback });
 
-      const add = classMethods.add.factory({ User: UserMock, Token: TokenMock });
+      const add = addFactory({ User: UserMock, Token: TokenMock });
 
       const result = await add(input);
 
