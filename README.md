@@ -107,4 +107,4 @@ Using `Session(container) { ... }` is not enough clear, becase `Session(containe
 
 Instead, `getSession(container) { ... }` helps to understand the purpose of the method... effectively.
 
-> The `get` prefix is always stripped out, so you can use `Session` or `getSession` and the identifier will remain the same.
+> The `get` prefix is always stripped out, so you can use `Session` or `getSession` and the identifier will remain the same. This is useful if you want to get simple values instead, e.g. `serviceLocator(container) { ... }`
