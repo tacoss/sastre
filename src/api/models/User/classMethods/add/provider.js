@@ -1,4 +1,8 @@
 module.exports = {
-  getToken: $ => $.Token,
-  getUser: $ => $.User,
+  getToken({ Token }) {
+    return Token;
+  },
+  getUser({ User }) {
+    return User;
+  },
 };
