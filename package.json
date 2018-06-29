@@ -1,8 +1,8 @@
 {
-  "name": "di-example",
+  "name": "di-container",
   "version": "0.0.0",
   "description": "DI madness!",
-  "main": "lib/container.js",
+  "main": "lib/index.js",
   "files": [
     "lib/*.js"
   ],
