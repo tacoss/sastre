@@ -9,10 +9,10 @@
   "scripts": {
     "mocha": "_mocha --exit --recursive -bR spec",
     "start": "node example.js",
-    "test": "npm run test:unit",
+    "test": "npm run test:unit --",
     "test:ci": "npm run coverage:unit && npm run report:lcov && npm run report:upload",
-    "test:unit": "npm run mocha 'test/*.test.js'",
-    "test:example": "npm run mocha 'src/**/*.test.js'",
+    "test:unit": "npm run mocha -- 'test/*.test.js'",
+    "test:example": "npm run mocha -- 'src/**/*.test.js'",
     "coverage": "nyc -x 'test/**' -x 'src/**/*.test.js'",
     "coverage:unit": "npm run coverage -- npm run test:unit",
     "report": "nyc report -r html",
