@@ -7,9 +7,17 @@
     "lib/*.js"
   ],
   "scripts": {
+    "mocha": "_mocha --exit --recursive -bR spec",
     "start": "node example.js",
-    "test": "_mocha 'test/*.test.js'",
-    "test:example": "_mocha 'src/**/*.test.js'"
+    "test": "npm run test:unit",
+    "test:ci": "npm run coverage:unit && npm run report:lcov && npm run report:upload",
+    "test:unit": "npm run mocha 'test/*.test.js'",
+    "test:example": "npm run mocha 'src/**/*.test.js'",
+    "coverage": "nyc -x '**/config/**' -x '**/*.test.js'  -x '**/{schemas,fixtures,factories}/**'",
+    "coverage:unit": "npm run coverage -- npm run test:unit",
+    "report": "nyc report -r html",
+    "report:lcov": "nyc report -r text-lcov > coverage/lcov.info",
+    "report:upload": "codecov --file=coverage/lcov.info -e TRAVIS_NODE_VERSION"
   },
   "author": "Alvaro Cabrera <pateketrueke@gmail.com>",
   "license": "MIT",
@@ -18,8 +26,10 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
+    "codecov": "^3.0.2",
     "mocha": "^5.2.0",
     "module-alias": "^2.1.0",
+    "nyc": "^12.0.2",
     "sequelize": "^4.38.0",
     "sqlite3": "^4.0.1",
     "testdouble": "^3.8.1"
