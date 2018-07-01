@@ -4,7 +4,7 @@ const User = {
   attributes: {
     name: {
       type: Sequelize.STRING,
-    }
+    },
   },
 };
 

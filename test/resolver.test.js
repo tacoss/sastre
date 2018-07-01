@@ -1,8 +1,12 @@
+/* eslint-disable no-unused-expressions */
+
 const Resolver = require('../lib/resolver');
 const Injector = require('../lib/injector');
 
 const td = require('testdouble');
 const expect = require('chai').expect;
+
+/* global it, describe, beforeEach, afterEach */
 
 class ExampleClass {
   constructor(anyInstance) {
@@ -142,11 +146,11 @@ describe('Resolver', () => {
 
     expect(exampleClass.x).to.eql(42);
 
-    const exampleFunction = resolverInstance.get('ExampleFunction');
+    const Fn = resolverInstance.get('ExampleFunction');
 
-    expect(exampleFunction(42)).to.eql(42);
+    expect(Fn(42)).to.eql(42);
 
-    expect(new exampleFunction().testSelf()).to.eql(ExampleFunction);
+    expect(new Fn().testSelf()).to.eql(ExampleFunction);
 
     expect(resolverInstance.get('ExampleObject').testString).to.eql('BAR');
     expect(resolverInstance.get('ExampleObject').testFunction()).to.eql(ExampleClass);

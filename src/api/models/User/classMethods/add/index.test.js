@@ -7,6 +7,8 @@ require('chai').should();
 
 const User = container.getModel('User');
 
+/* global it, describe, beforeEach, afterEach */
+
 describe('User', () => {
   describe('#add', () => {
     let createCallback;

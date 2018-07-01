@@ -1,7 +1,10 @@
+/* eslint-disable no-unused-expressions */
+
 const Injector = require('../lib/injector');
 
-const td = require('testdouble');
 const expect = require('chai').expect;
+
+/* global it, describe */
 
 describe('Injector', () => {
   describe('constructor', () => {
