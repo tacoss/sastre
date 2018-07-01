@@ -1,3 +1,3 @@
 module.exports = {
-  getUser: ({ User }) => User,
+  getUser() {},
 };
