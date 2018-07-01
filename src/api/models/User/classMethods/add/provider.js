@@ -1,8 +1,4 @@
 module.exports = {
-  getToken({ Token }) {
-    return Token;
-  },
-  getUser({ User }) {
-    return User;
-  },
+  getToken: ({ Token }) => Token,
+  getUser: ({ User }) => User,
 };
