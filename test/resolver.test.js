@@ -31,12 +31,8 @@ const injectables = {
 };
 
 const validInjectables = {
-  getExampleClass() {
-    return this.get('ExampleClass');
-  },
-  getExampleObject() {
-    return this.get('ExampleObject');
-  },
+  getExampleClass: ({ ExampleClass: Ex }) => Ex,
+  getExampleObject: ({ ExampleObject: Eo }) => Eo,
   getExampleFunction: ({ ExampleFunction: Fn }) => Fn,
 };
 
@@ -58,6 +54,54 @@ function mockResolver(registry, fixedValues) {
 }
 
 describe('Resolver', () => {
+  describe('constructor', () => {
+    const fs = require('fs');
+    const path = require('path');
+    const glob = require('glob');
+
+    let existsCallback;
+    let globCallback;
+
+    beforeEach(() => {
+      existsCallback = td.func('fs.existsSync');
+      globCallback = td.func('glob.sync');
+    });
+
+    afterEach(() => {
+      td.reset();
+    });
+
+    it('will collect a registry of modules when constructed', () => {
+      const scope = {
+        loadFile: td.func('Resolver.loadFile'),
+        registry: {},
+        values: {},
+      };
+
+      const scanFiles = Resolver.prototype.scanFiles.bind(scope);
+
+      td.replace(fs, 'existsSync', existsCallback);
+      td.replace(path, 'join', (...args) => args.join('/'));
+      td.replace(glob, 'sync', globCallback);
+
+      td.when(glob.sync('**/index.js', { cwd: '.', nosort: true }))
+        .thenReturn([
+          'Name/prop/method/index.js',
+          'Example/index.js',
+        ]);
+
+      td.when(scope.loadFile('./Name/prop/method/index.js')).thenReturn(function method() {});
+      td.when(scope.loadFile('./Example/index.js')).thenReturn(class Example {});
+
+      scanFiles('.');
+
+      expect(scope.values.Example).not.to.be.undefined;
+      expect(scope.values.Name).not.to.be.undefined;
+      expect(scope.registry.Example).not.to.be.undefined;
+      expect(scope.registry.Name.prop.method).not.to.be.undefined;
+    });
+  });
+
   it('will fail on missing values', () => {
     const resolverInstance = mockResolver({
       ExampleClass: {
@@ -103,6 +147,8 @@ describe('Resolver', () => {
     const exampleFunction = resolverInstance.get('ExampleFunction');
 
     expect(exampleFunction(42)).to.eql(42);
+
+    expect(new exampleFunction().testSelf()).to.eql(ExampleFunction);
 
     expect(resolverInstance.get('ExampleObject').testString).to.eql('BAR');
     expect(resolverInstance.get('ExampleObject').testFunction()).to.eql(ExampleClass);
