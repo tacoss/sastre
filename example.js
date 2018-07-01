@@ -14,8 +14,15 @@ const userController = container.getController('UserController');
 // sequelize model
 const User = container.getModel('User');
 
-Promise.resolve()
-  .then(() => User.sync({ force: true }))
-  .then(() => userController.add({ name: 'Example' }))
-  .then(result => console.log(result.get()))
-  .catch(console.log);
+module.exports = {
+  run: () =>
+    Promise.resolve()
+      .then(() => User.sync({ force: true }))
+      .then(() => userController.add({ name: 'Example' }))
+      .then(result => console.log(result.get()))
+      .catch(console.log),
+};
+
+if (require.main === module) {
+  module.exports.run();
+}
