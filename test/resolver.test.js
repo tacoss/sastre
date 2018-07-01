@@ -31,9 +31,9 @@ const injectables = {
 };
 
 const validInjectables = {
-  getExampleClass: ({ ExampleClass: Ex }) => Ex,
-  getExampleObject: ({ ExampleObject: Eo }) => Eo,
-  getExampleFunction: ({ ExampleFunction: Fn }) => Fn,
+  getExampleClass() {},
+  getExampleObject() {},
+  getExampleFunction() {},
 };
 
 function mockResolver(registry, fixedValues) {
@@ -117,7 +117,7 @@ describe('Resolver', () => {
       aNumber: 42,
     });
 
-    expect(() => resolverInstance.get('aNumber')).to.throw("Target is not an object, given '42'");
+    expect(() => resolverInstance.get('aNumber')).to.throw("Target 'aNumber' is not an object, given '42'");
   });
 
   it('will resolve injectable values otherwise', () => {
