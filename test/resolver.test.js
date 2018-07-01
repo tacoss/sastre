@@ -45,6 +45,7 @@ function mockResolver(registry, fixedValues) {
       ...values,
       ...fixedValues,
     },
+    _hooks: {},
     _lock: {},
     decorate: Resolver.prototype.decorate,
     resolve: Resolver.prototype.resolve,
