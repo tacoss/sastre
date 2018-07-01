@@ -13,6 +13,7 @@
     "test:ci": "npm run coverage:unit && npm run report:lcov && npm run report:upload",
     "test:unit": "npm run mocha -- 'test/*.test.js'",
     "test:example": "npm run mocha -- 'src/**/*.test.js'",
+    "test:coverage": "npm run coverage:unit && npm run report",
     "coverage": "nyc -x 'test/**' -x 'src/**/*.test.js'",
     "coverage:unit": "npm run coverage -- npm run test:unit",
     "report": "nyc report -r html",
