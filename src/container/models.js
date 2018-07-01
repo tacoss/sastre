@@ -3,24 +3,22 @@ const Sequelize = require('sequelize');
 
 class ModelDecorator {
   constructor(sequelize) {
-    return (name, definition) => {
-      if (typeof definition === 'object') {
-        const { attributes, ...options } = definition;
-        const { classMethods, instanceMethods, ...fixedOptions } = options;
+    this.sequelize = sequelize;
+  }
 
-        // notice that defining models at this point is breaking the DI reference on provider.js
-        // to nicely use destructuring we need to predefine models (with attributes) before!
-        // e.g. scanning models with json-schema-sequelizer, pregister them as classes
-        // and then let the Resolver do his job...
+  before(name, definition) {
+    const { attributes, ...options } = definition;
 
-        const Model = sequelize.define(name, attributes || {}, fixedOptions);
+    return this.sequelize.define(name, attributes || {}, options);
+  }
 
-        Object.assign(Model, classMethods);
-        Object.assign(Model.prototype, instanceMethods);
+  after(name, definition) {
+    Object.assign(definition, definition.classMethods);
+    Object.assign(definition.prototype, definition.instanceMethods);
 
-        return Model;
-      }
-    };
+    delete definition.attributes;
+    delete definition.classMethods;
+    delete definition.instanceMethods;
   }
 }
 
