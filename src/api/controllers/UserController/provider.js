@@ -1,3 +1,5 @@
 module.exports = {
-  getUser() {},
+  getUser() {
+    return this.getModel('User');
+  },
 };
