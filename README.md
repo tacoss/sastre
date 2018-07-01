@@ -1,3 +1,4 @@
+
 # Work in progress...
 
 Currently this module is not available at NPM, however you can install it through Git, e.g.
@@ -11,10 +12,14 @@ Now, you can use the `Resolver` class:
 ```js
 const { Resolver } = require('di-container');
 
-const optionalDecorator = (name, definition) => definition;
+const optionalHooks = {
+  before(name, definition) {},
+  after(name, definition) {},
+};
+
 const sourcesDirectory = `${__dirname}/lib`;
 
-const container = new Resolver(sourcesDirectory, optionalDecorator);
+const container = new Resolver(sourcesDirectory, optionalHooks);
 ```
 
 ## Quick start
@@ -78,9 +83,7 @@ Once a `provider.js` file is loaded, it’ll be used to retrieve dependencies fr
 
 ```js
 module.exports = {
-  getAnything(container) {
-    return container.Anything;
-  },
+  getAnything: ({ Anything }) => Anything,
 };
 ```
 
@@ -96,6 +99,20 @@ module.exports = ({ Anything }) =>
 Any returned value is placed into the final module definition, as their lexical scope makes this DI pattern works.
 
 > Provider files are complementary, you're not required to use them to benefit from the `Resolver` implementation.
+
+## Hooks
+
+Modules resolved can be changed or modified by custom decorators.
+
+&mdash; **before**
+
+Once `scanFiles()` is done, use this hook to modify or change the original definition received.
+
+&mdash; **after**
+
+Once a definition is unwrapped and still unlocked, use this hook to modify or change the final definition built.
+
+> Both operations will run once and only affect top-level definitions.
 
 ## FAQ's
 
