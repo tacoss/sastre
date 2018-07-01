@@ -5,7 +5,7 @@ const path = require('path');
 
 class Container {
   constructor() {
-    this.controllers = new ControllersResolver(path.resolve(__dirname, '../api/controllers'));
+    this.controllers = new ControllersResolver(path.resolve(__dirname, '../api/controllers'), this);
     this.models = new ModelsResolver(path.resolve(__dirname, '../api/models'));
   }
 

@@ -61,10 +61,12 @@ describe('Resolver', () => {
 
     let existsCallback;
     let globCallback;
+    let loadCallback;
 
     beforeEach(() => {
       existsCallback = td.func('fs.existsSync');
       globCallback = td.func('glob.sync');
+      loadCallback = td.func('Resolver.loadFile');
     });
 
     afterEach(() => {
@@ -72,14 +74,9 @@ describe('Resolver', () => {
     });
 
     it('will collect a registry of modules when constructed', () => {
-      const scope = {
-        loadFile: td.func('Resolver.loadFile'),
-        registry: {},
-        values: {},
-      };
+      const scanFiles = Resolver.scanFiles;
 
-      const scanFiles = Resolver.prototype.scanFiles.bind(scope);
-
+      td.replace(Resolver, 'loadFile', loadCallback);
       td.replace(fs, 'existsSync', existsCallback);
       td.replace(path, 'join', (...args) => args.join('/'));
       td.replace(glob, 'sync', globCallback);
@@ -90,10 +87,10 @@ describe('Resolver', () => {
           'Example/index.js',
         ]);
 
-      td.when(scope.loadFile('./Name/prop/method/index.js')).thenReturn(function method() {});
-      td.when(scope.loadFile('./Example/index.js')).thenReturn(class Example {});
+      td.when(Resolver.loadFile('./Name/prop/method/index.js')).thenReturn(function method() {});
+      td.when(Resolver.loadFile('./Example/index.js')).thenReturn(class Example {});
 
-      scanFiles('.');
+      const scope = scanFiles('.');
 
       expect(scope.values.Example).not.to.be.undefined;
       expect(scope.values.Name).not.to.be.undefined;

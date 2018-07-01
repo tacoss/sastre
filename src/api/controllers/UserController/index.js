@@ -1,6 +1,6 @@
 class UserController {
-  constructor(container) {
-    this.user = container.getModel('User');
+  constructor({ User }) {
+    this.user = User;
   }
 
   add(userInfo) {

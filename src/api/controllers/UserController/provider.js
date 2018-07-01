@@ -1,7 +1,3 @@
 module.exports = {
-  getUser(container) {
-    console.log('@@', contaienr);
-
-    return container.User;
-  },
+  getUser: ({ User }) => User,
 };
