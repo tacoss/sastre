@@ -71,14 +71,6 @@ describe('Resolver', () => {
       existsCallback = td.func('fs.existsSync');
       globCallback = td.func('glob.sync');
       loadCallback = td.func('Resolver.loadFile');
-    });
-
-    afterEach(() => {
-      td.reset();
-    });
-
-    it('will collect a registry of modules when constructed', () => {
-      const scanFiles = Resolver.scanFiles;
 
       td.replace(Resolver, 'loadFile', loadCallback);
       td.replace(fs, 'existsSync', existsCallback);
@@ -93,13 +85,27 @@ describe('Resolver', () => {
 
       td.when(Resolver.loadFile('./Name/prop/method/index.js')).thenReturn(function method() {});
       td.when(Resolver.loadFile('./Example/index.js')).thenReturn(class Example {});
+    });
 
-      const scope = scanFiles('.');
+    afterEach(() => {
+      td.reset();
+    });
 
-      expect(scope._values.Example).not.to.be.undefined;
-      expect(scope._values.Name).not.to.be.undefined;
-      expect(scope._registry.Example).not.to.be.undefined;
-      expect(scope._registry.Name.prop.method).not.to.be.undefined;
+    it('will collect a registry of modules when constructed', () => {
+      const container = new Resolver('.');
+
+      expect(container._hooks.after).to.be.undefined;
+      expect(container._values.Example).not.to.be.undefined;
+      expect(container._values.Name).not.to.be.undefined;
+      expect(container._registry.Example).not.to.be.undefined;
+      expect(container._registry.Name.prop.method).not.to.be.undefined;
+    });
+
+    it('can receive a function, it will be used as after-hook', () => {
+      const callback = x => x;
+      const container = new Resolver('.', callback);
+
+      expect(container._hooks.after).to.deep.eql(callback);
     });
   });
 
