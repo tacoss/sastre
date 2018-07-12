@@ -1,6 +1,6 @@
 /* global it, describe */
 
-describe.skip('Example', () => {
+describe('Example', () => {
   it('should integrate as expected', async () => {
     await require('../example').run();
   });
