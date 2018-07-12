@@ -139,7 +139,7 @@ Once a definition is unwrapped through `container.get()` and still unlocked, use
 
 The main goal of this library is getting rid of `require` calls from a well-know architecture do we use.
 
-We're also looking the benefits and pitfails beyond splitting everything into submodules.
+We're also looking the benefits and pitfalls beyond splitting everything into submodules.
 
 But loading parent stuff for common fixtures it's still an issue, e.g. `../../../../`
 
@@ -149,11 +149,11 @@ But loading parent stuff for common fixtures it's still an issue, e.g. `../../..
 
 E.g. you want a `Session` object within a method.
 
-Using `Session(container) { ... }` is not enough clear, becase `Session(container)` says nothing.
+Using `Session() { ... }` is not enough clear, becase `Session()` says nothing.
 
-Instead, `getSession(container) { ... }` helps to understand the purpose of the method... effectively.
+Instead, `getSession() { ... }` helps to understand the purpose of the method... effectively.
 
-> The `get` prefix is always stripped out, so you can use `Session` or `getSession` and the identifier will remain the same. This is useful if you want to get simple values instead, e.g. `serviceLocator(container) { ... }`
+> The `get` prefix is always stripped out, so you can use `Session` or `getSession` and the identifier will remain the same. This is useful if you want to get simple values instead, e.g. `serviceLocator() { ... }`
 
 ### How compose stuff?
 
@@ -161,7 +161,7 @@ A nice way to build complex dependencies through `provider.js` files is:
 
 ```js
 module.exports = {
-  userRepo({ User, Repository, getSequelizeDatasource }) {
+  userRepo({ User, Repository, SequelizeDatasource }) {
     const dbUser = new SequelizeDatasource(User);
     const repo = new Repository(dbUser);
 
