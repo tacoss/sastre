@@ -5,7 +5,7 @@
 [![Coverage Status](https://codecov.io/github/pateketrueke/sastre/coverage.svg?branch=next)](https://codecov.io/github/pateketrueke/sastre)
 [![Known Vulnerabilities](https://snyk.io/test/npm/sastre/badge.svg)](https://snyk.io/test/npm/sastre)
 
-![Sastre](sastre.png)
+![Sastre](s_needle.png)
 
 ```bash
 $ npm install sastre --save
