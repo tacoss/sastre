@@ -42,6 +42,10 @@ const validInjectables = {
 
 function mockResolver(registry, fixedValues) {
   return {
+    _decorator: {
+      before: td.func('before'),
+      after: td.func('after'),
+    },
     _registry: {
       ...registry,
     },
@@ -49,10 +53,8 @@ function mockResolver(registry, fixedValues) {
       ...values,
       ...fixedValues,
     },
-    _hooks: {},
     _lock: {},
-    _decorate: Resolver.prototype._decorate,
-    _unwrap: Resolver.prototype._unwrap,
+    unwrap: Resolver.prototype.unwrap,
     get: Resolver.prototype.get,
   };
 }
@@ -82,34 +84,41 @@ describe('Resolver', () => {
     });
 
     describe('constructor', () => {
+      function Foo() {}
+      const foo = () => 'BAR';
+      const cwd = '.';
+
       let scanCallback;
+      let decoratorInput;
 
       beforeEach(() => {
         scanCallback = td.func('Resolver.scanFiles');
+        decoratorInput = td.matchers.isA(Function);
 
         td.replace(Resolver, 'loadFile', loadCallback);
         td.replace(Resolver, 'scanFiles', scanCallback);
+
+        td.when(Resolver.scanFiles(cwd, decoratorInput))
+          .thenReturn({
+            registry: {
+              foo,
+            },
+            values: {
+              foo: Foo,
+            },
+          });
       });
 
       it('should work as expected', () => {
-        const cwd = '.';
-        const callback = td.matchers.isA(Function);
-
-        td.when(Resolver.scanFiles(cwd, callback))
-          .thenReturn({
-            _registry: {
-              foo: 'BAR',
-            },
-          });
-
-        expect(new Resolver(cwd)._registry).to.be.deep.eql({ foo: 'BAR' });
+        expect(new Resolver(cwd)._registry).to.be.deep.eql({ foo });
       });
 
       it('can receive a function, it will be used as after-hook', () => {
-        const callback = x => x;
+        const callback = td.func('after-hook');
         const container = new Resolver('.', callback);
 
-        expect(container._hooks.after).to.deep.eql(callback);
+        expect(container.get('foo')).to.eql(Foo);
+        expect(td.explain(callback).callCount).to.eql(1);
       });
     });
 
@@ -142,7 +151,8 @@ describe('Resolver', () => {
 
         const container = new Resolver('.');
 
-        expect(container._hooks.after).to.be.undefined;
+        expect(container._decorator.before).not.to.be.undefined;
+        expect(container._decorator.after).not.to.be.undefined;
         expect(container._values.Example).not.to.be.undefined;
         expect(container._values.Name).not.to.be.undefined;
         expect(container._registry.Example).not.to.be.undefined;
