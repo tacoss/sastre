@@ -21,6 +21,7 @@
     "report:lcov": "nyc report -r text-lcov > coverage/lcov.info",
     "report:upload": "codecov --file=coverage/lcov.info -e TRAVIS_NODE_VERSION"
   },
+  "repository": "https://github.com/pateketrueke/sastre",
   "author": "Alvaro Cabrera <pateketrueke@gmail.com>",
   "license": "MIT",
   "dependencies": {
