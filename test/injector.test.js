@@ -37,6 +37,12 @@ describe('Injector', () => {
   });
 
   describe('assign', () => {
+    it('should fail on unexpected values', () => {
+      expect(() => {
+        Injector.assign();
+      }).to.throw("Target is not an object, given 'undefined'");
+    });
+
     it('can assign and lock injectables once', () => {
       const target = {};
 
