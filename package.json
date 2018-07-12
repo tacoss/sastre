@@ -11,7 +11,7 @@
     "node": "node -r module-alias/register --",
     "start": "npm run node -- example.js",
     "test": "npm run test:unit --",
-    "test:ci": "npm run coverage:unit && npm run report:lcov && npm run report:upload",
+    "test:ci": "npm run coverage:unit && npm run report:lcov && npm run report:upload --",
     "test:unit": "npm run mocha -- 'test/*.test.js'",
     "test:example": "npm run mocha -- 'example/**/*.test.js'",
     "test:coverage": "npm run coverage:unit && npm run report",
