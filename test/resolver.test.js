@@ -42,18 +42,17 @@ const validInjectables = {
 
 function mockResolver(registry, fixedValues) {
   return {
-    registry: {
+    _registry: {
       ...registry,
     },
-    values: {
+    _values: {
       ...values,
       ...fixedValues,
     },
     _hooks: {},
     _lock: {},
-    decorate: Resolver.prototype.decorate,
-    resolve: Resolver.prototype.resolve,
-    unwrap: Resolver.prototype.unwrap,
+    _decorate: Resolver.prototype._decorate,
+    _unwrap: Resolver.prototype._unwrap,
     get: Resolver.prototype.get,
   };
 }
@@ -97,10 +96,10 @@ describe('Resolver', () => {
 
       const scope = scanFiles('.');
 
-      expect(scope.values.Example).not.to.be.undefined;
-      expect(scope.values.Name).not.to.be.undefined;
-      expect(scope.registry.Example).not.to.be.undefined;
-      expect(scope.registry.Name.prop.method).not.to.be.undefined;
+      expect(scope._values.Example).not.to.be.undefined;
+      expect(scope._values.Name).not.to.be.undefined;
+      expect(scope._registry.Example).not.to.be.undefined;
+      expect(scope._registry.Name.prop.method).not.to.be.undefined;
     });
   });
 
