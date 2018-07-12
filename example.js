@@ -1,5 +1,3 @@
-require('module-alias/register');
-
 const container = require('@src/container');
 
 // standard classes

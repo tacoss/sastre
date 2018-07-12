@@ -7,8 +7,9 @@
     "lib/*.js"
   ],
   "scripts": {
-    "mocha": "_mocha --exit --recursive -bR spec",
-    "start": "node example.js",
+    "mocha": "_mocha -r module-alias/register --exit --recursive -bR spec",
+    "node": "node -r module-alias/register --",
+    "start": "npm run node -- example.js",
     "test": "npm run test:unit --",
     "test:ci": "npm run coverage:unit && npm run report:lcov && npm run report:upload",
     "test:unit": "npm run mocha -- 'test/*.test.js'",
