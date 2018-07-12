@@ -20,7 +20,7 @@ describe('Injector', () => {
       });
 
       expect(test.factory).not.to.be.undefined;
-      expect(test.deps.foo).not.to.be.undefined;
+      expect(test.dependencies.foo).not.to.be.undefined;
     });
   });
 
