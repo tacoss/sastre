@@ -40,8 +40,11 @@ const validInjectables = {
   getExampleFunction() {},
 };
 
-function mockResolver(registry, fixedValues) {
+function mockResolver(registry, fixedValues, fixedDependencies) {
   return {
+    _dependencies: {
+      ...fixedDependencies,
+    },
     _decorator: {
       before: td.func('before'),
       after: td.func('after'),
@@ -179,6 +182,16 @@ describe('Resolver', () => {
     });
 
     expect(() => resolverInstance.get('aNumber')).to.throw("Target 'aNumber' is not an object, given '42'");
+  });
+
+  it('will resolve from rootContainer as fallback', () => {
+    const resolverInstance = mockResolver(null, null, {
+      theTruth() {
+        return 42;
+      },
+    });
+
+    expect(resolverInstance.get('theTruth')()).to.eql(42);
   });
 
   it('will resolve injectable values otherwise', () => {
