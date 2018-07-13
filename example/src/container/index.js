@@ -5,8 +5,14 @@ const path = require('path');
 
 class Container {
   constructor() {
-    this.controllers = new ControllersResolver(path.resolve(__dirname, '../api/controllers'), this);
-    this.models = new ModelsResolver(path.resolve(__dirname, '../api/models'));
+    this.controllers = new ControllersResolver(this, path.resolve(__dirname, '../api/controllers'));
+    this.models = new ModelsResolver(this, path.resolve(__dirname, '../api/models'));
+  }
+
+  getDependencies() {
+    return {
+      getUser: () => this.getModel('User'),
+    };
   }
 
   getController(name) {

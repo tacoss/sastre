@@ -2,10 +2,10 @@ const Resolver = require('@lib/resolver');
 const Sequelize = require('sequelize');
 
 class ModelsResolver {
-  constructor(modelsDir) {
+  constructor(container, modelsDir) {
     const sequelize = new Sequelize('sqlite::memory:');
 
-    return new Resolver(modelsDir, {
+    return new Resolver(container, modelsDir, {
       before(name, definition) {
         const { attributes, ...options } = definition;
 
