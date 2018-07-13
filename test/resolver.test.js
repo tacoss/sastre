@@ -110,12 +110,12 @@ describe('Resolver', () => {
       });
 
       it('should work as expected', () => {
-        expect(new Resolver(cwd)._registry).to.be.deep.eql({ foo });
+        expect(new Resolver(null, cwd)._registry).to.be.deep.eql({ foo });
       });
 
       it('can receive a function, it will be used as after-hook', () => {
         const callback = td.func('after-hook');
-        const container = new Resolver('.', callback);
+        const container = new Resolver(null, '.', callback);
 
         expect(container.get('foo')).to.eql(Foo);
         expect(td.explain(callback).callCount).to.eql(1);
@@ -149,7 +149,7 @@ describe('Resolver', () => {
         td.when(Resolver.loadFile('./Name/prop/method/index.js')).thenReturn(function method() {});
         td.when(Resolver.loadFile('./Example/index.js')).thenReturn(class Example {});
 
-        const container = new Resolver('.');
+        const container = new Resolver(null, '.');
 
         expect(container._decorator.before).not.to.be.undefined;
         expect(container._decorator.after).not.to.be.undefined;
