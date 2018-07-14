@@ -10,6 +10,48 @@ const td = require('testdouble');
 
 describe('Injector', () => {
   describe('constructor', () => {
+    it('should fail on invalid values', () => {
+      expect(() => new Injector()).to.throw('Cannot inject non-callable values');
+    });
+  });
+
+  describe('hasLocked', () => {
+    it('detects if values has injectables', () => {
+      expect(Injector.hasLocked({})).to.be.false;
+    });
+  });
+
+  describe('supports', () => {
+    it('validates if values are injectables', () => {
+      expect(Injector.supports()).to.be.false;
+    });
+  });
+
+  describe('assign', () => {
+    it('should fail on unexpected values', () => {
+      expect(() => {
+        Injector.assign();
+      }).to.throw("Target is not an object, given 'undefined'");
+    });
+
+    it('can assign and lock injectables once', () => {
+      const target = {};
+
+      Injector.assign(target, {
+        foo: 'BAR',
+      });
+
+      expect(target).to.be.deep.eql({
+        foo: 'BAR',
+      });
+
+      expect(() => Injector.assign(target, {
+        baz: 'BUZZ',
+      })).to.throw('Cannot assign to locked values');
+    });
+  });
+
+  describe('bind', () => {
     const someInjectables = {
       dep1() {},
       dep2() {
@@ -79,42 +121,6 @@ describe('Injector', () => {
 
       expect(result()).to.eql('OK');
       expect(td.explain(getCallback).callCount).to.eql(0);
-    });
-  });
-
-  describe('hasLocked', () => {
-    it('detects if values has injectables', () => {
-      expect(Injector.hasLocked({})).to.be.false;
-    });
-  });
-
-  describe('supports', () => {
-    it('validates if values are injectables', () => {
-      expect(() => Injector.supports(new Injector())).to.throw('Cannot inject non-callable values');
-    });
-  });
-
-  describe('assign', () => {
-    it('should fail on unexpected values', () => {
-      expect(() => {
-        Injector.assign();
-      }).to.throw("Target is not an object, given 'undefined'");
-    });
-
-    it('can assign and lock injectables once', () => {
-      const target = {};
-
-      Injector.assign(target, {
-        foo: 'BAR',
-      });
-
-      expect(target).to.be.deep.eql({
-        foo: 'BAR',
-      });
-
-      expect(() => Injector.assign(target, {
-        baz: 'BUZZ',
-      })).to.throw('Cannot assign to locked values');
     });
   });
 });
