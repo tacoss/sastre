@@ -4,25 +4,40 @@ const Injector = require('../lib/injector');
 
 const expect = require('chai').expect;
 
-/* global it, describe, beforeEach */
+const td = require('testdouble');
+
+/* global it, describe, afterEach, beforeEach */
 
 describe('Injector', () => {
   describe('constructor', () => {
     const someInjectables = {
-      dep1() {
-        return 42;
+      dep1() {},
+      dep2() {
+        return 'OK';
       },
     };
 
     let fakeResolver;
+    let getCallback;
 
     beforeEach(() => {
+      getCallback = td.func('resolver.get');
+
       fakeResolver = {
+        get: getCallback,
         _values: {
           dep1: {},
+          dep2: {},
         },
         _dependencies: {},
       };
+
+      td.when(fakeResolver.get('dep1'))
+        .thenReturn(-42);
+    });
+
+    afterEach(() => {
+      td.reset();
     });
 
     it('will return plain functions as is', () => {
@@ -46,14 +61,24 @@ describe('Injector', () => {
       const testClass = new Injector(Test, someInjectables);
       const result = Injector.bind(fakeResolver, testClass);
 
-      expect(result).to.deep.eql({ dep: 42 });
+      expect(result).to.deep.eql({ dep: -42 });
+      expect(td.explain(getCallback).callCount).to.eql(1);
     });
 
     it('arrow functions are used to inject values', () => {
       const testArrow = new Injector(({ dep1 }) => () => dep1, someInjectables);
       const result = Injector.bind(fakeResolver, testArrow);
 
-      expect(result()).to.eql(42);
+      expect(result()).to.eql(-42);
+      expect(td.explain(getCallback).callCount).to.eql(1);
+    });
+
+    it('would return values given from injectors (if any)', () => {
+      const testArrow = new Injector(({ dep2 }) => () => dep2, someInjectables);
+      const result = Injector.bind(fakeResolver, testArrow);
+
+      expect(result()).to.eql('OK');
+      expect(td.explain(getCallback).callCount).to.eql(0);
     });
   });
 
