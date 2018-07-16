@@ -12,7 +12,7 @@ describe('Container', () => {
   describe('static methods', () => {
     describe('constructor', () => {
       it('just extends from given args', () => {
-        expect(new Container({ a: 'b' })).to.be.eql({ a: 'b' });
+        expect(new Container(null, { a: 'b' })).to.be.eql({ a: 'b' });
       });
     });
 
@@ -73,7 +73,7 @@ describe('Container', () => {
 
   describe('instance methods', () => {
     function buildContainer({ resolverValues, injectableValues } = {}) {
-      return new Container({
+      return new Container(null, {
         values: {
           ...resolverValues,
         },

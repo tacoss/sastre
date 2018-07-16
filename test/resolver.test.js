@@ -63,6 +63,11 @@ describe('Resolver', () => {
       });
     });
 
+    describe('useFile', () => {
+      it('TODO', () => {
+      });
+    });
+
     describe('loadFile', () => {
       it('is just a wrapper for require() calls', () => {
         expect(Resolver.loadFile('util')).to.be.eql(require('util'));
