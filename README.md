@@ -203,7 +203,7 @@ ES6 classes are automatically decorated to receive all provided dependencies.
 
 ### What are root-providers?
 
-While individual `resolver.js` files are intended to decorate in-place methods, repeating common dependencies will happen sooner as you expect.
+Individual `resolver.js` files are intended to decorate in-place methods or whole containers.
 
 So, placing `resolver.js` files in the same directory where modules are scanned is enough to serve as defaults, e.g.
 
