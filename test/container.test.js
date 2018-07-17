@@ -84,6 +84,12 @@ describe('Container', () => {
     }
 
     describe('get', () => {
+      let afterCallback;
+
+      beforeEach(() => {
+        afterCallback = td.func('decorator.after');
+      });
+
       afterEach(() => {
         td.reset();
       });
@@ -138,8 +144,6 @@ describe('Container', () => {
           },
         });
 
-        const afterCallback = td.func('decorator.after');
-
         const resolver = {
           get: name => container.get(name, afterCallback),
           ...container,
@@ -149,6 +153,35 @@ describe('Container', () => {
 
         expect(result()).to.eql({ value: 42 });
         expect(td.explain(afterCallback).callCount).to.eql(1);
+      });
+
+      it('should unwrap resolved Injector instances before any extension', () => {
+        const injectedValue = new Injector(() => function test() {}, {});
+
+        td.when(afterCallback('test', td.matchers.isA(Function)))
+          .thenReturn(-1);
+
+        const result = new Container(null, {
+          values: {
+            test: injectedValue,
+          },
+          registry: {
+            test: {},
+          },
+        }).get('test', afterCallback);
+
+        expect(td.explain(afterCallback).callCount).to.eql(1);
+        expect(result).to.eql(-1);
+      });
+
+      it('should report any failure during decoration', () => {
+        expect(() => {
+          new Container(null, {
+            values: {
+              undef: {},
+            },
+          }).get('undef');
+        }).to.throw("Definition of 'undef' failed. Cannot read property 'undef' of undefined");
       });
     });
   });
