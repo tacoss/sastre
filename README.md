@@ -1,4 +1,4 @@
-# Sastre
+<div align="center">
 
 ![Sastre](s_needle.svg)
 
@@ -7,8 +7,18 @@
 [![Coverage Status](https://codecov.io/github/pateketrueke/sastre/coverage.svg?branch=master)](https://codecov.io/github/pateketrueke/sastre)
 [![Known Vulnerabilities](https://snyk.io/test/npm/sastre/badge.svg)](https://snyk.io/test/npm/sastre)
 
+</div>
+
+Install with npm:
+
 ```bash
 $ npm install sastre --save
+```
+
+Or yarn:
+
+```bash
+$ yarn add sastre
 ```
 
 ## Quick start
