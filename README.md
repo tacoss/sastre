@@ -203,9 +203,9 @@ ES6 classes are automatically decorated to receive all provided dependencies.
 
 ### What are root-providers?
 
-Individual `resolver.js` files are intended to decorate in-place methods or whole containers.
+Individual `provider.js` files are intended to decorate in-place methods or whole containers.
 
-So, placing `resolver.js` files in the same directory where modules are scanned is enough to serve as defaults, e.g.
+So, placing `provider.js` files in the same directory where modules are scanned is enough to serve as defaults, e.g.
 
 ```bash
 $ tree example/src/api/controllers
