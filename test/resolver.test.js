@@ -135,6 +135,19 @@ describe('Resolver', () => {
 
         expect(() => Resolver.scanFiles('.')).not.to.throw();
       });
+
+      it('should warn on unexpected providers', () => {
+        td.when(glob.sync('**/index.js', { cwd: '.', nosort: true }))
+          .thenReturn([
+            'Test/provider.js',
+          ]);
+
+        td.replace(Resolver, 'loadFile', loadCallback);
+
+        td.when(fs.existsSync('./Test/provider.js')).thenReturn(true);
+
+        expect(() => new Resolver('.')).to.throw('Unexpected provider file, given ./Test/provider.js');
+      });
     });
   });
 
