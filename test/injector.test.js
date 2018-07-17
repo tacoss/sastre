@@ -13,6 +13,7 @@ describe('Injector', () => {
     describe('constructor', () => {
       it('should fail on invalid values', () => {
         expect(() => new Injector()).to.throw('Cannot inject non-callable values');
+        expect(() => new Injector(function noop() {})).to.throw('Invalid injectables, given undefined');
       });
     });
 
@@ -122,6 +123,64 @@ describe('Injector', () => {
 
         expect(result()).to.eql('OK');
         expect(td.explain(getCallback).callCount).to.eql(0);
+      });
+
+      it('should fail on missing dependencies', () => {
+        expect(() => {
+          Injector.bind(fakeResolver, new Injector(() => null, { undef() {} }));
+        }).to.throw("Missing 'undef' dependency");
+      });
+
+      it('should fail on missing values', () => {
+        expect(() => {
+          Injector.bind({
+            values: {
+              dep1: null,
+            },
+          }, new Injector(() => null, { dep1() {} }));
+        }).to.throw("Value 'dep1' is not defined");
+      });
+
+      it('should fail if given provider is not a function', () => {
+        expect(() => {
+          Injector.bind({
+            values: {
+              dep1() {},
+            },
+          }, new Injector(() => null, { dep1: NaN }));
+        }).to.throw('Invalid resolver, given NaN');
+      });
+
+      it('should fail if proxy cannot resolve the given provider', () => {
+        expect(() => {
+          Injector.bind({
+            values: {
+              dep1() {},
+              undef() {},
+            },
+          }, new Injector(({ undef }) => undef, { dep1() {} }));
+        }).to.throw("Missing 'undef' provider");
+      });
+    });
+
+    describe('use', () => {
+      it('should resolve and memoize dependencies once', () => {
+        const factoryCalback = td.func('fooBar');
+
+        const fakeDefinition = {
+          _dependencies: {
+            fooBar: factoryCalback,
+          },
+          _factory: props => [props.fooBar, props.fooBar],
+        };
+
+        const fakeResolver = {
+          _root: null,
+        };
+
+        Injector.use(fakeResolver, fakeDefinition);
+
+        expect(td.explain(factoryCalback).callCount).to.eql(1);
       });
     });
   });
