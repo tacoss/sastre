@@ -19,6 +19,8 @@ Please see the [example file](example/index.js) for a reference integration whic
 - Container interface for `models`:
   - `User` &mdash; Sequelize model
   - `Token` &mdash; ES6 class definition
+- Container interface for `controllers` :
+  - `UserController` &mdash; GRPC controller
 
 > Also, you can execute `npm run test:example` to run their unit-tests.
 
@@ -41,7 +43,7 @@ $ tree example/src/api/models
 4 directories, 5 files
 ```
 
-As result you'll get the following module definition:
+As result you'll get _approximately_ the following module definition:
 
 ```js
 const Token = require('./Token');
@@ -78,7 +80,7 @@ const optionalHooks = {
 
 const sourcesDirectory = `${__dirname}/lib`;
 
-const container = new Resolver(sourcesDirectory, optionalHooks);
+const container = new Resolver(null, sourcesDirectory, optionalHooks);
 ```
 
 You can access found modules through the `get()` method:
@@ -93,11 +95,15 @@ From this point you can start hacking happily.
 
 The `Injector` class is used to flag out any entry point that demands extra stuff.
 
-Found `provider.js` files will be used to retrieve dependencies from the container:
+Any found `provider.js` files will be used to retrieve dependencies from the container:
 
 ```js
 module.exports = {
   getAnything() { /* yes, it's empty; keep reading ;-) */ },
+  getFromContainer() {
+    // `this` is null here due `new Resolver(null, ...)`
+    return this;
+  },
 };
 ```
 
@@ -105,8 +111,9 @@ Above:
 
 - Function names are used to retrieve dependencies from the container.
 - It's OK if they're empty, but if you return any truthy value it'll be used in place.
+- Provider functions can access the context given on `new Resolver()` instantiation.
 
-On these cases, the `index.js` MUST exports a _function factory_ which will only receive the resolved dependencies.
+Now, `index.js` MUST exports a _function factory_ which will only receive the resolved dependencies.
 
 ```js
 module.exports = ({ Anything }) =>
@@ -115,9 +122,11 @@ module.exports = ({ Anything }) =>
   };
 ```
 
+> Please use arrow-functions to inject values ase they're detected for this purpose, regular functions will not work.
+
 Any returned value is placed into the final module definition, as their lexical scope makes this DI pattern works.
 
-> Provider files are complementary, you're not required to use them to benefit from the `Resolver` implementation.
+This would work for any kind of methods, even those from `prototype`.
 
 ## Hooks
 
@@ -127,11 +136,13 @@ Modules resolved can be modified or replaced by custom decorators too.
 
 Once `Resolver.scanFiles()` is done, use this hook to modify or replace the original definition received.
 
+> During this hook you can access the original class if given, without instantiate.
+
 &mdash; **after**
 
 Once a definition is unwrapped through `container.get()` and still unlocked, use this hook to modify or replace the final definition built.
 
-> Both operations will run once and only affect top-level definitions.
+> Here you can access the instantiated class if given, partially injected. In this step you can perform property-injection based on your needs.
 
 ## FAQ's
 
@@ -186,6 +197,21 @@ module.exports = ({ userRepo }) =>
 
 The included example implements an [advanced container](example/src/container/controllers.js) for higher IoC composition.
 
-Using the `Resolver.use()` method will automatically decorate any found classes injecting the first argument given.
+ES6 classes are automatically decorated to receive all provided dependencies.
 
-> Actually we're just passing the main container down through sub containers, etc.
+> You can access other containers through the root-container, it is given as `this` on all providers.
+
+### What are root-providers?
+
+While individual `resolver.js` files are intended to decorate in-place methods, repeating common dependencies will happen sooner as you expect.
+
+So, placing `resolver.js` files in the same directory where modules are scanned is enough to serve as defaults, e.g.
+
+```bash
+$ tree example/src/api/controllers
+├── UserController
+│   └── index.js
+└── provider.js
+
+1 directory, 2 files
+```
