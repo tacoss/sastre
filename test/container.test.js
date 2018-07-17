@@ -54,7 +54,7 @@ describe('Container', () => {
         td.when(Injector.supports({ baz: null }))
           .thenReturn(true);
 
-        td.when(Injector.bind(null, { baz: null }))
+        td.when(Injector.bind(null, { baz: null }, td.matchers.anything()))
           .thenReturn({ baz: 42 });
 
         const result = Container.unwrap(null, props);

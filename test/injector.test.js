@@ -75,7 +75,7 @@ describe('Injector', () => {
           dependencies: {},
         };
 
-        td.when(fakeResolver.get('dep1'))
+        td.when(fakeResolver.get('dep1', td.matchers.anything()))
           .thenReturn(-42);
       });
 

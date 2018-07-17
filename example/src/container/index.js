@@ -9,13 +9,6 @@ class Container {
     this.models = new ModelsResolver(this, path.resolve(__dirname, '../api/models'));
   }
 
-  getDependencies() {
-    return {
-      getToken: () => this.getModel('Token'),
-      getUser: () => this.getModel('User'),
-    };
-  }
-
   getController(name) {
     return this.controllers.get(name, this);
   }
