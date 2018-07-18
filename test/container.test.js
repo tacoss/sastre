@@ -161,16 +161,20 @@ describe('Container', () => {
         td.when(afterCallback('test', td.matchers.isA(Function)))
           .thenReturn(-1);
 
-        const result = new Container(null, {
+        const container = new Container(null, {
           values: {
             test: injectedValue,
+            raw: Injector.Symbol,
           },
           registry: {
             test: {},
           },
-        }).get('test', afterCallback);
+        });
+
+        const result = container.get('test', afterCallback);
 
         expect(td.explain(afterCallback).callCount).to.eql(1);
+        expect(container.get('raw')).to.eql({});
         expect(result).to.eql(-1);
       });
 
