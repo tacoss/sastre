@@ -15,6 +15,10 @@ describe('Injector', () => {
         expect(() => new Injector()).to.throw('Cannot inject non-callable values');
         expect(() => new Injector(function noop() {})).to.throw('Invalid injectables, given undefined');
       });
+
+      it('should skip async functions as injectors', () => {
+        expect(() => new Injector(async () => null, {})._factory()).not.to.throw();
+      });
     });
 
     describe('hasLocked', () => {

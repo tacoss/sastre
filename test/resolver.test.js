@@ -16,9 +16,11 @@ describe('Resolver', () => {
     let existsCallback;
     let globCallback;
     let loadCallback;
+    let useCallback;
 
     beforeEach(() => {
       loadCallback = td.func('Resolver.loadFile');
+      useCallback = td.func('Resolver.useFile');
       existsCallback = td.func('fs.existsSync');
       globCallback = td.func('glob.sync');
 
@@ -103,6 +105,7 @@ describe('Resolver', () => {
             'Test/sub/nested/index.js',
           ]);
 
+        td.replace(Resolver, 'useFile', useCallback);
         td.replace(Resolver, 'loadFile', loadCallback);
 
         td.when(Resolver.loadFile('./Name/prop/injectableMethod/index.js')).thenReturn(({ undef }) => () => undef);
@@ -111,6 +114,12 @@ describe('Resolver', () => {
         td.when(Resolver.loadFile('./Test/index.js')).thenReturn({});
         td.when(Resolver.loadFile('./Test/sub/index.js')).thenReturn(function sub() {});
         td.when(Resolver.loadFile('./Test/sub/nested/index.js')).thenReturn(function nested() {});
+
+        td.when(Resolver.useFile('./provider.js'))
+          .thenReturn({
+            getTest() {},
+            getGlobal() {},
+          });
 
         const container = new Resolver('.');
 
