@@ -153,6 +153,20 @@ describe('Container', () => {
 
         expect(result()).to.eql({ value: 42 });
         expect(td.explain(afterCallback).callCount).to.eql(1);
+
+        // should unlock decorated values once
+        function Test() {}
+
+        td.when(afterCallback('dep1', td.matchers.isA(Object)))
+          .thenReturn(Test);
+
+        expect(container._lock.dep1).to.be.undefined;
+        expect(container.get('dep1', afterCallback)).to.eql(Test);
+        expect(container._lock.dep1).to.be.false;
+        expect(container.get('dep1', afterCallback)).to.eql(Test);
+        expect(container._lock.dep1).to.be.true;
+
+        expect(td.explain(afterCallback).callCount).to.eql(3);
       });
 
       it('should unwrap resolved Injector instances before any extension', () => {
