@@ -164,6 +164,38 @@ describe('Injector', () => {
           }, new Injector(({ undef }) => undef, { dep1() {} }));
         }).to.throw("Missing 'undef' provider");
       });
+
+      it('should resolve again if getters are given', () => {
+        const dep1Callback = td.func();
+        const dep2Callback = td.func();
+
+        td.when(dep1Callback()).thenReturn('ONE');
+        td.when(dep2Callback()).thenReturn('TWO');
+
+        // sadly, destructuring happens once and live-getters won't work...
+        const proxyFn = new Injector(ctx => () => {
+          return [ctx.dep1 && ctx.dep1, ctx.dep2 && ctx.dep2];
+        }, {
+          dep1() {
+            return dep1Callback();
+          },
+          get dep2() {
+            return dep2Callback();
+          },
+        });
+
+        const result = Injector.bind({
+          get: getCallback,
+          values: {
+            dep1: {},
+            dep2: {},
+          },
+        }, proxyFn)();
+
+        expect(result).to.eql(['ONE', 'TWO']);
+        expect(td.explain(dep1Callback).callCount).to.eql(1);
+        expect(td.explain(dep2Callback).callCount).to.eql(2);
+      });
     });
 
     describe('use', () => {
