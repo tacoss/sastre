@@ -3,7 +3,6 @@
 const Injector = require('../lib/injector');
 
 const expect = require('chai').expect;
-
 const td = require('testdouble');
 
 /* global it, describe, afterEach, beforeEach */

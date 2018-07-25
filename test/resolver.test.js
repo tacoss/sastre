@@ -2,8 +2,8 @@
 
 const Resolver = require('../lib/resolver');
 
-const td = require('testdouble');
 const expect = require('chai').expect;
+const td = require('testdouble');
 
 /* global it, describe, beforeEach, afterEach */
 
