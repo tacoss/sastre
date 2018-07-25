@@ -1,8 +1,10 @@
 /* eslint-disable no-unused-expressions */
 
 const Chainable = require('../lib/chainable');
+const Container = require('../lib/container');
 
 const expect = require('chai').expect;
+const td = require('testdouble');
 
 /* global it, describe */
 
@@ -15,6 +17,12 @@ describe('Chainable', () => {
 
       it('should validate each given function', () => {
         expect(() => new Chainable(null, { undef: null }).call()).to.throw('Invalid function, given null');
+      });
+    });
+
+    describe('supports', () => {
+      it('validates if values are chainables', () => {
+        expect(Chainable.supports()).to.be.false;
       });
     });
   });
@@ -62,6 +70,32 @@ describe('Chainable', () => {
         await test.call.a.c.b();
         expect(callCount).to.eql(3);
         expect(values).to.eql(['A', 'C', 'B']);
+      });
+
+      it('can be called through container.get() resolution', async () => {
+        const afterCallback = td.func();
+        const callable = td.func();
+
+        const container = new Container(null, {
+          values: {
+            dep1: new Chainable(null, {
+              a: callable,
+              b: callable,
+              c: callable,
+            }),
+          },
+          registry: {
+            dep1: {},
+          },
+        });
+
+        await container.get('dep1', afterCallback)();
+        await container.get('dep1', afterCallback).a();
+        await container.get('dep1', afterCallback).a.b();
+        await container.get('dep1', afterCallback).b.b.c();
+
+        expect(td.explain(callable).callCount).to.eql(6);
+        expect(td.explain(afterCallback).callCount).to.eql(0);
       });
     });
   });
