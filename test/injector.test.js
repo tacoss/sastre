@@ -199,6 +199,10 @@ describe('Injector', () => {
     });
 
     describe('use', () => {
+      const fakeResolver = {
+        _root: null,
+      };
+
       it('should resolve and memoize dependencies once', () => {
         const factoryCalback = td.func('fooBar');
 
@@ -209,13 +213,22 @@ describe('Injector', () => {
           _factory: props => [props.fooBar, props.fooBar],
         };
 
-        const fakeResolver = {
-          _root: null,
-        };
-
         Injector.use(fakeResolver, fakeDefinition);
 
         expect(td.explain(factoryCalback).callCount).to.eql(1);
+      });
+
+      it('should fail on invalid resolvers', () => {
+        const fakeDefinition = {
+          _dependencies: {
+            fooBar: {},
+          },
+          _factory: ({ fooBar }) => [fooBar],
+        };
+
+        expect(() => {
+          Injector.use(fakeResolver, fakeDefinition);
+        }).to.throw('Invalid resolver, given {}');
       });
     });
   });
