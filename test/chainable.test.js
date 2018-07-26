@@ -18,11 +18,9 @@ describe('Chainable', () => {
       it('should validate each given function', () => {
         expect(() => new Chainable(null, { undef: null })).to.throw('Invalid function, given null');
       });
-    });
 
-    describe('supports', () => {
-      it('validates if values are chainables', () => {
-        expect(Chainable.supports()).to.be.false;
+      it('should validate each factory function given', () => {
+        expect(() => new Chainable(null, {})(null)).to.throw('Invalid factory, given null');
       });
     });
   });
