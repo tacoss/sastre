@@ -1,3 +1,5 @@
+'use strict';
+
 /* eslint-disable no-unused-expressions */
 
 const Resolver = require('../lib/resolver');
@@ -25,7 +27,9 @@ describe('Resolver', () => {
       globCallback = td.func('glob.sync');
 
       td.replace(fs, 'existsSync', existsCallback);
-      td.replace(path, 'join', (...args) => args.join('/'));
+      td.replace(path, 'join', function join() {
+        return Array.prototype.slice.call(arguments).join('/');
+      });
       td.replace(glob, 'sync', globCallback);
     });
 
@@ -108,7 +112,7 @@ describe('Resolver', () => {
         td.replace(Resolver, 'useFile', useCallback);
         td.replace(Resolver, 'loadFile', loadCallback);
 
-        td.when(Resolver.loadFile('./Name/prop/injectableMethod/index.js')).thenReturn(({ undef }) => () => undef);
+        td.when(Resolver.loadFile('./Name/prop/injectableMethod/index.js')).thenReturn(ctx => () => ctx.undef);
         td.when(Resolver.loadFile('./Name/prop/method/index.js')).thenReturn(function method() {});
         td.when(Resolver.loadFile('./Example/index.js')).thenReturn(class Example {});
         td.when(Resolver.loadFile('./Test/index.js')).thenReturn({});

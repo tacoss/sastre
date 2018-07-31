@@ -12,15 +12,12 @@
     "node": "node -r module-alias/register --",
     "start": "npm run node -- example.js",
     "test": "npm run test:unit --",
-    "test:ci": "npm run coverage:unit && npm run report:lcov && npm run report:upload --",
+    "test:ci": "npm run coverage && npm run report --",
     "test:unit": "npm run mocha -- 'test/*.test.js'",
     "test:example": "npm run mocha -- 'example/**/*.test.js'",
-    "test:coverage": "npm run coverage:unit && npm run report",
-    "coverage": "nyc -x 'test/**' -x 'example/**/*.test.js'",
-    "coverage:unit": "npm run coverage -- npm run test:unit",
-    "report": "nyc report -r html",
-    "report:lcov": "nyc report -r text-lcov > coverage/lcov.info",
-    "report:upload": "codecov --file=coverage/lcov.info -e TRAVIS_NODE_VERSION"
+    "test:coverage": "npm run coverage && npm run report",
+    "coverage": "NODE_ENV=test istanbul cover --root lib -- _mocha -r module-alias/register --exit --recursive -bR spec 'test/**/*.test.js'",
+    "report": "codecov --file=coverage/lcov.info -e TRAVIS_NODE_VERSION"
   },
   "repository": "https://github.com/pateketrueke/sastre",
   "author": "Alvaro Cabrera <pateketrueke@gmail.com>",
@@ -31,12 +28,12 @@
   "devDependencies": {
     "chai": "^4.1.2",
     "codecov": "^3.0.2",
+    "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
     "module-alias": "^2.1.0",
-    "nyc": "^12.0.2",
     "sequelize": "^4.38.0",
     "sqlite3": "^4.0.1",
-    "testdouble": "^3.8.1"
+    "testdouble": "^2.1.2"
   },
   "_moduleAliases": {
     "@src": "example/src",

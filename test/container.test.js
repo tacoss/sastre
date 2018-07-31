@@ -1,3 +1,5 @@
+'use strict';
+
 /* eslint-disable no-unused-expressions */
 
 const Container = require('../lib/container');
@@ -72,14 +74,12 @@ describe('Container', () => {
   });
 
   describe('instance methods', () => {
-    function buildContainer({ resolverValues, injectableValues } = {}) {
+    function buildContainer(ctx) {
+      ctx = ctx || {};
+
       return new Container(null, {
-        values: {
-          ...resolverValues,
-        },
-        registry: {
-          ...injectableValues,
-        },
+        values: Object.assign({}, ctx.resolverValues),
+        registry: Object.assign({}, ctx.injectableValues),
       });
     }
 
@@ -103,7 +103,9 @@ describe('Container', () => {
         ];
 
         TESTS.forEach(testInfo => {
-          const [args, propName, givenValue] = testInfo;
+          const args = testInfo[0];
+          const propName = testInfo[1];
+          const givenValue = testInfo[2];
 
           expect(() => {
             buildContainer({ resolverValues: args }).get(propName);
@@ -124,8 +126,8 @@ describe('Container', () => {
       });
 
       it('should resolve and lock values otherwise', () => {
-        const dep1 = new Injector(({ Value }) => function method() {
-          return new Value();
+        const dep1 = new Injector(ctx => function method() {
+          return new ctx.Value();
         }, {
           getValue() {},
         });
@@ -144,10 +146,9 @@ describe('Container', () => {
           },
         });
 
-        const resolver = {
+        const resolver = Object.assign({
           get: name => container.get(name, afterCallback),
-          ...container,
-        };
+        }, container);
 
         const result = Injector.bind(resolver, dep1);
 

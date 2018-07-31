@@ -1,4 +1,7 @@
+'use strict';
+
 /* eslint-disable no-unused-expressions */
+/* eslint-disable no-eval */
 
 const Injector = require('../lib/injector');
 
@@ -15,9 +18,11 @@ describe('Injector', () => {
         expect(() => new Injector(function noop() {})).to.throw('Invalid injectables, given undefined');
       });
 
-      it('should skip async functions as injectors', () => {
-        expect(() => new Injector(async () => null, {})._factory()).not.to.throw();
-      });
+      if (parseFloat(process.version.substr(1)) >= 6) {
+        it('should skip async functions as injectors', () => {
+          expect(() => new Injector(eval('return(async () => null)'), {})._factory()).not.to.throw();
+        });
+      }
     });
 
     describe('hasLocked', () => {
@@ -99,8 +104,8 @@ describe('Injector', () => {
 
       it('will return instantiated classes bound', () => {
         class Test {
-          constructor({ dep1 }) {
-            this.dep = dep1;
+          constructor(ctx) {
+            this.dep = ctx.dep1;
           }
         }
 
@@ -112,7 +117,7 @@ describe('Injector', () => {
       });
 
       it('arrow functions are used to inject values', () => {
-        const testArrow = new Injector(({ dep1 }) => () => dep1, someInjectables);
+        const testArrow = new Injector(ctx => () => ctx.dep1, someInjectables);
         const result = Injector.bind(fakeResolver, testArrow);
 
         expect(result()).to.eql(-42);
@@ -120,7 +125,7 @@ describe('Injector', () => {
       });
 
       it('would return values given from injectors (if any)', () => {
-        const testArrow = new Injector(({ dep2 }) => () => dep2, someInjectables);
+        const testArrow = new Injector(ctx => () => ctx.dep2, someInjectables);
         const result = Injector.bind(fakeResolver, testArrow);
 
         expect(result()).to.eql('OK');
@@ -160,7 +165,7 @@ describe('Injector', () => {
               dep1() {},
               undef() {},
             },
-          }, new Injector(({ undef }) => undef, { dep1() {} }));
+          }, new Injector(ctx => ctx.undef, { dep1() {} }));
         }).to.throw("Missing 'undef' provider");
       });
 
@@ -222,7 +227,7 @@ describe('Injector', () => {
           _dependencies: {
             fooBar: {},
           },
-          _factory: ({ fooBar }) => [fooBar],
+          _factory: ctx => [ctx.fooBar],
         };
 
         expect(() => {

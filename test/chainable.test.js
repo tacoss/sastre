@@ -1,3 +1,5 @@
+'use strict';
+
 /* eslint-disable no-unused-expressions */
 
 const Chainable = require('../lib/chainable');
@@ -26,7 +28,7 @@ describe('Chainable', () => {
   });
 
   describe('callable', () => {
-    it('should inject chainable methods on call', async () => {
+    it('should inject chainable methods on call', () => {
       const callable = td.func();
 
       const test = new Chainable(null, {
@@ -35,12 +37,12 @@ describe('Chainable', () => {
         c: callable,
       });
 
-      await test(({ a }) => a.b.c)();
-
-      expect(td.explain(callable).callCount).to.eql(3);
+      return test(ctx => ctx.a.b.c)().then(() => {
+        expect(td.explain(callable).callCount).to.eql(3);
+      });
     });
 
-    it('should invoke given middlewares in order', async () => {
+    it('should invoke given middlewares in order', () => {
       let values;
       let callCount;
 
@@ -73,32 +75,33 @@ describe('Chainable', () => {
         c: () => delay(100, () => push('C')),
       });
 
-      reset();
-      expect(test()).to.throw('Missing middleware to chain');
+      expect(reset() || test()).to.throw('Missing middleware to chain');
       expect(values).to.be.undefined;
       expect(callCount).to.be.undefined;
       expect(td.explain(inc).callCount).to.eql(0);
 
-      reset();
-      await test(({ a }) => a)();
-      expect(callCount).to.eql(1);
-      expect(values).to.eql(['A']);
-      expect(td.explain(inc).callCount).to.eql(1);
-
-      reset();
-      await test(({ a }) => a.b)();
-      expect(callCount).to.eql(3);
-      expect(values).to.eql(['A', 'B']);
-      expect(td.explain(inc).callCount).to.eql(3);
-
-      reset();
-      await test(({ a }) => a.c.b)();
-      expect(callCount).to.eql(6);
-      expect(values).to.eql(['A', 'C', 'B']);
-      expect(td.explain(inc).callCount).to.eql(6);
+      return Promise.resolve()
+        .then(() => reset() || test(ctx => ctx.a)())
+        .then(() => {
+          expect(callCount).to.eql(1);
+          expect(values).to.eql(['A']);
+          expect(td.explain(inc).callCount).to.eql(1);
+        })
+        .then(() => reset() || test(ctx => ctx.a.b)())
+        .then(() => {
+          expect(callCount).to.eql(3);
+          expect(values).to.eql(['A', 'B']);
+          expect(td.explain(inc).callCount).to.eql(3);
+        })
+        .then(() => reset() || test(ctx => ctx.a.c.b)())
+        .then(() => {
+          expect(callCount).to.eql(6);
+          expect(values).to.eql(['A', 'C', 'B']);
+          expect(td.explain(inc).callCount).to.eql(6);
+        });
     });
 
-    it('can be called through container.get() resolution', async () => {
+    it('can be called through container.get() resolution', () => {
       const after = td.func();
       const callable = td.func();
 
@@ -115,13 +118,15 @@ describe('Chainable', () => {
         },
       });
 
-      await container.get('dep1', after)();
-      await container.get('dep1')(({ a }) => a)();
-      await container.get('dep1')(({ a }) => a.b)();
-      await container.get('dep1')(({ a }) => a.b.c)();
-
-      expect(td.explain(after).callCount).to.eql(1);
-      expect(td.explain(callable).callCount).to.eql(6);
+      return Promise.all([
+        container.get('dep1', after)(),
+        container.get('dep1')(ctx => ctx.a)(),
+        container.get('dep1')(ctx => ctx.a.b)(),
+        container.get('dep1')(ctx => ctx.a.b.c)(),
+      ]).then(() => {
+        expect(td.explain(after).callCount).to.eql(1);
+        expect(td.explain(callable).callCount).to.eql(6);
+      });
     });
   });
 });
