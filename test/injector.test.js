@@ -20,7 +20,7 @@ describe('Injector', () => {
 
       if (parseFloat(process.version.substr(1)) >= 6) {
         it('should skip async functions as injectors', () => {
-          expect(() => new Injector(eval('return(async () => null)'), {})._factory()).not.to.throw();
+          expect(() => new Injector(eval('(async () => null)'), {})._factory()).not.to.throw();
         });
       }
     });
