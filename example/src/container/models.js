@@ -1,3 +1,5 @@
+'use strict';
+
 const Resolver = require('@lib/resolver');
 const Sequelize = require('sequelize');
 
@@ -7,7 +9,14 @@ class ModelsResolver {
 
     return new Resolver(container, modelsDir, {
       before(name, definition) {
-        const { attributes, ...options } = definition;
+        if (definition._factory) {
+          console.log('FIXME', 'this would unwrap the class only?');
+        }
+
+        const options = Object.assign(definition);
+        const attributes = options.attributes;
+
+        delete options.attributes;
 
         return sequelize.define(name, attributes || {}, options);
       },

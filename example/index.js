@@ -4,7 +4,7 @@ const container = require('@src/container');
 const Token = container.getModel('Token');
 const token = new Token();
 
-console.log('Token', token instanceof Token, Token.create());
+console.log('Token', token instanceof Token, Token.makeId());
 
 // injected class-constructor
 const userController = container.getController('UserController');

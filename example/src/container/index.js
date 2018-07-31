@@ -1,3 +1,5 @@
+'use strict';
+
 const ControllersResolver = require('./controllers');
 const ModelsResolver = require('./models');
 

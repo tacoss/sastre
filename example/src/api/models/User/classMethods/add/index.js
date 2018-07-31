@@ -1,8 +1,8 @@
-module.exports = ({ User, Token }) =>
-  async function add(userInfo) {
-    const user = await User.create(userInfo);
+module.exports = ctx =>
+  function add(userInfo) {
+    return ctx.User.create(userInfo).then(user => {
+      user.token = ctx.Token.makeId();
 
-    user.token = Token.create();
-
-    return user.save();
+      return user.save();
+    });
   };

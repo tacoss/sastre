@@ -1,6 +1,8 @@
+'use strict';
+
 class UserController {
-  constructor({ User }) {
-    this.user = User;
+  constructor(ctx) {
+    this.user = ctx.User;
   }
 
   add(userInfo) {

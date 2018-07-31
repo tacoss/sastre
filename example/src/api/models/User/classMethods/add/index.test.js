@@ -1,3 +1,5 @@
+'use strict';
+
 const container = require('@src/container');
 const td = require('testdouble');
 
@@ -27,7 +29,7 @@ describe('User', () => {
       td.reset();
     });
 
-    it('can mock User.create as expected', async () => {
+    it('can mock User.create as expected', () => {
       const input = {
         some: 'INFO',
       };
@@ -35,19 +37,19 @@ describe('User', () => {
       td.replace(User, 'create', createCallback);
       td.when(User.create(input)).thenResolve({ save: saveCallback });
 
-      const result = await User.add(input);
-
-      result.should.be.eql(IF_OK);
+      return User.add(input).then(result => {
+        result.should.be.eql(IF_OK);
+      });
     });
 
-    it('can mock through DI as expected', async () => {
+    it('can mock through DI as expected', () => {
       const addFactory = require('.');
 
       // here we can use td.imitate(User) but it'll do a deep-mock, and we don't want that...
       // we could be using a Repository-pattern here, just to mock that instead, e.g. td.imitate(UserRepo)
 
-      const UserMock = td.imitate({ create() {} });
-      const TokenMock = td.imitate({ create() {} });
+      const UserMock = { create: td.func() };
+      const TokenMock = { makeId: td.func() };
 
       const input = {
         foo: 'BAR',
@@ -57,9 +59,9 @@ describe('User', () => {
 
       const add = addFactory({ User: UserMock, Token: TokenMock });
 
-      const result = await add(input);
-
-      result.should.be.eql(IF_OK);
+      return add(input).then(result => {
+        result.should.be.eql(IF_OK);
+      });
     });
   });
 });

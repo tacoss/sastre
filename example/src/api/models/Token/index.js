@@ -1,6 +1,8 @@
+'use strict';
+
 class Token {
-  static create() {
-    return Math.random().toString(36).substr(2, 7);
+  static makeId() {
+    return 42;
   }
 }
 

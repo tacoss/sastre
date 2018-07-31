@@ -1,3 +1,5 @@
+'use strict';
+
 const Resolver = require('@lib/resolver');
 
 class ControllersResolver {
