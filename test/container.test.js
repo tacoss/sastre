@@ -171,7 +171,7 @@ describe('Container', () => {
       });
 
       it('should unwrap resolved Injector instances before any extension', () => {
-        const injectedValue = new Injector(() => function test() {}, {});
+        const injectedValue = new Injector(() => function test() {}, { dep1() {} });
 
         td.when(afterCallback('test', td.matchers.isA(Function)))
           .thenReturn(-1);
