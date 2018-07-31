@@ -1,10 +1,14 @@
+/* eslint-disable no-unused-expressions */
+
 const container = require('@src/container');
+const expect = require('chai').expect;
 
 // standard classes
 const Token = container.getModel('Token');
 const token = new Token();
 
-console.log('Token', token instanceof Token, Token.makeId());
+expect(Token.makeId()).to.eql(42);
+expect(token instanceof Token).to.be.true;
 
 // injected class-constructor
 const userController = container.getController('UserController');
@@ -17,8 +21,7 @@ module.exports = {
     Promise.resolve()
       .then(() => User.sync({ force: true }))
       .then(() => userController.add({ name: 'Example' }))
-      .then(result => console.log(result.get()))
-      .catch(console.log),
+      .then(result => console.log(result.get())),
 };
 
 if (require.main === module) {
