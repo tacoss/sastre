@@ -78,7 +78,6 @@ describe('Resolver', () => {
     });
 
     describe('useFile', () => {
-      // FIXME: test for fs.exists() and loadFile() call
       it('can return dependencies if provider file exists', () => {
         td.replace(Resolver, 'loadFile', loadCallback);
 
