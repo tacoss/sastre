@@ -171,13 +171,18 @@ describe('Container', () => {
       });
 
       it('should unwrap resolved Injector instances before any extension', () => {
-        const injectedValue = new Injector(() => function test() {}, { dep1() {} });
+        function test() {}
+        class Test {}
 
-        td.when(afterCallback('test', td.matchers.isA(Function)))
+        const injectedValue = new Injector(() => test, { dep1() {} });
+        const returnedValue = new Injector(Test, { dep2() {} });
+
+        td.when(afterCallback('test', test))
           .thenReturn(-1);
 
         const container = new Container(null, {
           values: {
+            plain: returnedValue,
             test: injectedValue,
             raw: Injector.Symbol,
           },
@@ -186,9 +191,11 @@ describe('Container', () => {
           },
         });
 
+        expect(container.get('plain', afterCallback)).to.eql(Test);
+
         const result = container.get('test', afterCallback);
 
-        expect(td.explain(afterCallback).callCount).to.eql(1);
+        expect(td.explain(afterCallback).callCount).to.eql(2);
         expect(container.get('raw')).to.eql({});
         expect(result).to.eql(-1);
       });
