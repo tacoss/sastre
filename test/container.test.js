@@ -171,17 +171,28 @@ describe('Container', () => {
       });
 
       it('should unwrap resolved Injector instances before any extension', () => {
-        function test() {}
-        class Test {}
+        function empty() {}
+        class Noop {}
+        class Value {
+          constructor(ctx) {
+            this._value = ctx.dep1;
+          }
+        }
 
-        const injectedValue = new Injector(() => test, { dep1() {} });
-        const returnedValue = new Injector(Test, { dep2() {} });
+        const dep1 = td.func();
 
-        td.when(afterCallback('test', test))
+        td.when(dep1()).thenReturn(42);
+
+        const injectedValue = new Injector(() => empty, { dep1 });
+        const returnedValue = new Injector(Noop, { dep1 });
+        const injectableValue = new Injector(Value, { get dep1() { return dep1; } });
+
+        td.when(afterCallback('test', empty))
           .thenReturn(-1);
 
         const container = new Container(null, {
           values: {
+            withCtx: injectableValue,
             plain: returnedValue,
             test: injectedValue,
             raw: Injector.Symbol,
@@ -191,11 +202,13 @@ describe('Container', () => {
           },
         });
 
-        expect(container.get('plain', afterCallback)).to.eql(Test);
+
+        expect(container.get('withCtx', afterCallback)).to.eql({ _value: 42 });
+        expect(container.get('plain', afterCallback)).to.eql(Noop);
 
         const result = container.get('test', afterCallback);
 
-        expect(td.explain(afterCallback).callCount).to.eql(2);
+        expect(td.explain(afterCallback).callCount).to.eql(3);
         expect(container.get('raw')).to.eql({});
         expect(result).to.eql(-1);
       });
