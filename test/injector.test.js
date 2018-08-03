@@ -18,7 +18,7 @@ describe('Injector', () => {
         expect(() => new Injector(function noop() {})).to.throw('Invalid injectables, given undefined');
       });
 
-      if (parseFloat(process.version.substr(1)) >= 6) {
+      if (parseFloat(process.version.substr(1)) >= 8) {
         it('should skip async functions as injectors', () => {
           expect(() => new Injector(eval('(async () => null)'), {})._factory()).not.to.throw();
         });
