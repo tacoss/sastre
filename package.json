@@ -1,6 +1,6 @@
 {
   "name": "sastre",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Module confection at its finest.",
   "main": "lib/index.js",
   "files": [
