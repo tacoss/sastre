@@ -37,7 +37,7 @@ describe('Chainable', () => {
         c: callable,
       });
 
-      return test(ctx => ctx.a.b.c)().then(() => {
+      return test(ctx => ctx.a.b.c()).then(() => {
         expect(td.explain(callable).callCount).to.eql(3);
       });
     });
@@ -75,25 +75,25 @@ describe('Chainable', () => {
         c: () => delay(100, () => push('C')),
       });
 
-      expect(reset() || test()).to.throw('Missing middleware to chain');
+      reset();
       expect(values).to.be.undefined;
       expect(callCount).to.be.undefined;
       expect(td.explain(inc).callCount).to.eql(0);
 
       return Promise.resolve()
-        .then(() => reset() || test(ctx => ctx.a)())
+        .then(() => reset() || test(ctx => ctx.a()))
         .then(() => {
           expect(callCount).to.eql(1);
           expect(values).to.eql(['A']);
           expect(td.explain(inc).callCount).to.eql(1);
         })
-        .then(() => reset() || test(ctx => ctx.a.b)())
+        .then(() => reset() || test(ctx => ctx.a.b()))
         .then(() => {
           expect(callCount).to.eql(3);
           expect(values).to.eql(['A', 'B']);
           expect(td.explain(inc).callCount).to.eql(3);
         })
-        .then(() => reset() || test(ctx => ctx.a.c.b)())
+        .then(() => reset() || test(ctx => ctx.a.c.b()))
         .then(() => {
           expect(callCount).to.eql(6);
           expect(values).to.eql(['A', 'C', 'B']);
@@ -119,14 +119,46 @@ describe('Chainable', () => {
       });
 
       return Promise.all([
-        container.get('dep1', after)(),
-        container.get('dep1')(ctx => ctx.a)(),
-        container.get('dep1')(ctx => ctx.a.b)(),
-        container.get('dep1')(ctx => ctx.a.b.c)(),
+        container.get('dep1', after),
+        container.get('dep1')(ctx => ctx.a()),
+        container.get('dep1')(ctx => ctx.a.b()),
+        container.get('dep1')(ctx => ctx.a.b.c()),
       ]).then(() => {
         expect(td.explain(after).callCount).to.eql(1);
         expect(td.explain(callable).callCount).to.eql(6);
       });
+    });
+
+    it('should throw if anything rejects inside', () => {
+      function factory() {
+        function foo() {
+          return Promise.reject(new Error('Oh noes!'));
+        }
+
+        return new Chainable(null, {
+          bar(req, args) {
+            return Promise.resolve()
+              .then(() => foo(req, args))
+              .then(() => {
+                throw new Error('IT_SHALL_NOT_PASS');
+              });
+          },
+          foo,
+        });
+      }
+
+      const use = factory();
+
+      let err;
+
+      return Promise.resolve()
+        .then(() => use(({ bar }) => bar({ baz: 'buzz' })))
+        .catch(e => {
+          err = e;
+        })
+        .then(() => {
+          expect(err).to.match(/Oh noes!/);
+        });
     });
   });
 });
