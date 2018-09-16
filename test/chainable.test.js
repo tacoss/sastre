@@ -18,7 +18,7 @@ describe('Chainable', () => {
       });
 
       it('should validate each given function', () => {
-        expect(() => new Chainable(null, { undef: null })).to.throw('Invalid function, given null');
+        expect(() => new Chainable(null, { undef: null })).to.throw("Invalid function for 'undef', given null");
       });
 
       it('should validate each factory function given', () => {
@@ -152,7 +152,7 @@ describe('Chainable', () => {
       let err;
 
       return Promise.resolve()
-        .then(() => use(({ bar }) => bar({ baz: 'buzz' })))
+        .then(() => use($ => $.bar({ baz: 'buzz' })))
         .catch(e => {
           err = e;
         })
