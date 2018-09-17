@@ -225,3 +225,25 @@ $ tree example/src/api/controllers
 
 1 directory, 2 files
 ```
+
+### What are chainables?
+
+The `Chainable` class lets you do things like this:
+
+```js
+const run = new Chainable(null, {
+  async test() {
+    return Promise.resolve(42);
+  },
+  anythingElse() {
+    console.log('OK');
+  },
+});
+
+await run($ => $.test.anythingElse());
+await run($ => $.anythingElse.test());
+await run(({ test }) => test.anythingElse());
+await run(({ anythingElse }) => anythingElse.test());
+```
+
+> This would help you to chain functions in order, both sync or async are supported.
