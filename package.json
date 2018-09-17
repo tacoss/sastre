@@ -19,7 +19,7 @@
     "coverage": "NODE_ENV=test istanbul cover --root lib -- _mocha -r module-alias/register --exit --recursive -bR spec 'test/**/*.test.js'",
     "report": "codecov --file=coverage/lcov.info -e TRAVIS_NODE_VERSION"
   },
-  "repository": "https://github.com/agavelab/sastre",
+  "repository": "https://github.com/agave/sastre",
   "author": "Agave Lab <oss@agavelab.com> (https://agavelab.com)",
   "maintainers": [
     "Alvaro Cabrera <pateketrueke@gmail.com> (https://soypache.co)"
