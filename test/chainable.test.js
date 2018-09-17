@@ -160,5 +160,24 @@ describe('Chainable', () => {
           expect(err).to.match(/Oh noes!/);
         });
     });
+
+    it('should fail on empty chainables', () => {
+      const chain = new Chainable(null, {});
+
+      expect(() => chain(fn => fn())).to.throw('Missing middleware to chain');
+    });
+
+    it('should return deferred if chain returns nothing', () => {
+      const cb = td.func('callback');
+      const chain = new Chainable(null, {
+        ok: cb,
+      });
+
+      return chain($ => {
+        $.ok();
+      }).then(() => {
+        expect(td.explain(cb).callCount).to.eql(1);
+      });
+    });
   });
 });
