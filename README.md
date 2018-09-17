@@ -2,9 +2,9 @@
 
 ![Sastre](s_needle.svg)
 
-[![Build Status](https://api.travis-ci.org/pateketrueke/sastre.svg?branch=master)](https://travis-ci.org/pateketrueke/sastre)
+[![Build Status](https://api.travis-ci.org/agavelab/sastre.svg?branch=master)](https://travis-ci.org/agavelab/sastre)
 [![NPM version](https://badge.fury.io/js/sastre.svg)](http://badge.fury.io/js/sastre)
-[![Coverage Status](https://codecov.io/github/pateketrueke/sastre/coverage.svg?branch=master)](https://codecov.io/github/pateketrueke/sastre)
+[![Coverage Status](https://codecov.io/github/agavelab/sastre/coverage.svg?branch=master)](https://codecov.io/github/agavelab/sastre)
 [![Known Vulnerabilities](https://snyk.io/test/npm/sastre/badge.svg)](https://snyk.io/test/npm/sastre)
 
 </div>
