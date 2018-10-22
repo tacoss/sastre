@@ -19,7 +19,8 @@
     "test:example": "npm run mocha -- -r module-alias/register 'example/**/*.test.js'",
     "test:coverage": "npm run coverage && npm run report",
     "coverage": "nyc -x '**/tests/**' -x '**/*.test.js' -- npm run test:unit",
-    "report": "nyc report"
+    "report": "nyc report",
+    "prepublish": "npm run build"
   },
   "repository": {
     "type": "git",
