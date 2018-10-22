@@ -76,6 +76,8 @@ Above:
 
 > Nesting modules has no depth limits, you can produce almost any kind of object using this technique.
 
+Since `0.1.1` module and method names are converted from `dash-case` to `PascalCase` and `camelCase` respectively. This would help to alleviate issues with case-sensitiveness on some environments, especially when doing cross-environment development, e.g. Linux vs OSx.
+
 ## Containers
 
 An instantiated `Resolver` becomes a `container` instance, you name it:
