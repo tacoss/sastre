@@ -1,6 +1,4 @@
-'use strict';
-
-const Resolver = require('@lib/resolver');
+const { Resolver } = require('@lib'); // eslint-disable-line
 
 class ControllersResolver {
   constructor(container, controllersDir) {

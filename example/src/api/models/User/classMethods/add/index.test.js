@@ -1,9 +1,6 @@
-'use strict';
-
-const container = require('@src/container');
 const td = require('testdouble');
-
-require('chai').should();
+const { expect } = require('chai');
+const container = require('@src/container'); // eslint-disable-line
 
 const User = container.getModel('User');
 
@@ -38,7 +35,7 @@ describe('User', () => {
       td.when(User.create(input)).thenResolve({ save: saveCallback });
 
       return User.add(input).then(result => {
-        result.should.be.eql(IF_OK);
+        expect(result).to.be.eql(IF_OK);
       });
     });
 
@@ -60,7 +57,7 @@ describe('User', () => {
       const add = addFactory({ User: UserMock, Token: TokenMock });
 
       return add(input).then(result => {
-        result.should.be.eql(IF_OK);
+        expect(result).to.be.eql(IF_OK);
       });
     });
   });

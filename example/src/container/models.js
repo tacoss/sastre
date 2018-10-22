@@ -1,7 +1,5 @@
-'use strict';
-
-const Resolver = require('@lib/resolver');
 const Sequelize = require('sequelize');
+const { Resolver } = require('@lib'); // eslint-disable-line
 
 class ModelsResolver {
   constructor(container, modelsDir) {

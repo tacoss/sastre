@@ -9,19 +9,23 @@
   ],
   "scripts": {
     "dev": "npm run test -- -w",
-    "mocha": "_mocha -r esm -r module-alias/register --exit --recursive -bR spec",
+    "mocha": "_mocha --exit --recursive -bR spec",
     "build": "bili src/index.js --target node --js buble --format es,cjs",
     "node": "node -r module-alias/register --",
-    "start": "npm run node -- example.js",
+    "start": "npm run node -- example",
     "test": "npm run test:unit --",
     "test:ci": "npm run coverage && npm run report --",
-    "test:unit": "npm run mocha -- 'test/*.test.js'",
-    "test:example": "npm run mocha -- 'example/**/*.test.js'",
+    "test:unit": "npm run mocha -- -r esm 'test/*.test.js'",
+    "test:example": "npm run mocha -- -r module-alias/register 'example/**/*.test.js'",
     "test:coverage": "npm run coverage && npm run report",
-    "coverage": "NODE_ENV=test istanbul cover --root lib -- _mocha -r module-alias/register --exit --recursive -bR spec 'test/**/*.test.js'",
-    "report": "codecov --file=coverage/lcov.info -e TRAVIS_NODE_VERSION"
+    "coverage": "nyc -x '**/tests/**' -x '**/*.test.js' -- npm run test:unit",
+    "report": "nyc report"
   },
-  "repository": "https://github.com/agave/sastre",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/agave/sastre"
+  },
+  "bugs": "https://github.com/agave/sastre/issues",
   "author": "Agave Lab <oss@agavelab.com> (https://agavelab.com)",
   "maintainers": [
     "Alvaro Cabrera <pateketrueke@gmail.com> (https://soypache.co)"
@@ -35,15 +39,15 @@
     "chai": "^4.1.2",
     "codecov": "^3.0.2",
     "esm": "^3.0.84",
-    "istanbul": "^0.4.5",
     "mocha": "^5.2.0",
     "module-alias": "^2.1.0",
+    "nyc": "^13.1.0",
     "sequelize": "^4.38.0",
     "sqlite3": "^4.0.1",
     "testdouble": "^3.8.2"
   },
   "_moduleAliases": {
-    "@src": "example/src",
-    "@lib": "lib"
+    "@src": "./example/src",
+    "@lib": "./dist/sastre.cjs.js"
   }
 }

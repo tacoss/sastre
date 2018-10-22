@@ -1,9 +1,7 @@
-'use strict';
+const path = require('path');
 
 const ControllersResolver = require('./controllers');
 const ModelsResolver = require('./models');
-
-const path = require('path');
 
 class Container {
   constructor() {

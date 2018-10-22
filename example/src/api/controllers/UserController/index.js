@@ -1,5 +1,3 @@
-'use strict';
-
 class UserController {
   constructor(ctx) {
     this.user = ctx.User;

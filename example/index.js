@@ -1,7 +1,8 @@
 /* eslint-disable no-unused-expressions */
 
-const container = require('@src/container');
-const expect = require('chai').expect;
+const { expect } = require('chai');
+
+const container = require('@src/container'); // eslint-disable-line
 
 // standard classes
 const Token = container.getModel('Token');
@@ -16,14 +17,17 @@ const userController = container.getController('UserController');
 // sequelize model
 const User = container.getModel('User');
 
+function run() {
+  return Promise.resolve()
+    .then(() => User.sync({ force: true }))
+    .then(() => userController.add({ name: 'Example' }))
+    .then(result => console.log(result.get()));
+}
+
 module.exports = {
-  run: () =>
-    Promise.resolve()
-      .then(() => User.sync({ force: true }))
-      .then(() => userController.add({ name: 'Example' }))
-      .then(result => console.log(result.get())),
+  run,
 };
 
 if (require.main === module) {
-  module.exports.run();
+  run();
 }

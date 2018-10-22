@@ -1,5 +1,3 @@
-'use strict';
-
 class Token {
   static makeId() {
     return 42;
