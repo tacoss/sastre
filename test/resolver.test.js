@@ -104,6 +104,7 @@ describe('Resolver', () => {
             'Test/index.js',
             'Test/sub/index.js',
             'Test/sub/nested/index.js',
+            'other-test/with-dashes-and/such-things.js',
           ]);
 
         td.replace(Resolver, 'useFile', useCallback);
@@ -115,6 +116,7 @@ describe('Resolver', () => {
         td.when(Resolver.loadFile('./Test/index.js')).thenReturn({});
         td.when(Resolver.loadFile('./Test/sub/index.js')).thenReturn(function sub() {});
         td.when(Resolver.loadFile('./Test/sub/nested/index.js')).thenReturn(function nested() {});
+        td.when(Resolver.loadFile('./other-test/with-dashes-and/such-things.js')).thenReturn(function suchThings() {});
 
         td.when(Resolver.useFile('./provider.js'))
           .thenReturn({
@@ -131,6 +133,10 @@ describe('Resolver', () => {
         expect(container._container.registry.Example).not.to.be.undefined;
         expect(container._container.registry.Name.prop.injectableMethod).not.to.be.undefined;
         expect(container._container.registry.Name.prop.method).not.to.be.undefined;
+        expect(container._container.registry['other-test']).to.be.undefined;
+        expect(container._container.registry.otherTest).to.be.undefined;
+        expect(container._container.registry.OtherTest).not.to.be.undefined;
+        expect(container._container.registry.OtherTest.withDashesAnd).not.to.be.undefined;
       });
 
       it('can skip the after-callback', () => {

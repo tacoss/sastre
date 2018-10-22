@@ -42,6 +42,14 @@ function assignProps(target) {
   return target;
 }
 
+function camelCase(value) {
+  return value.replace(/-([a-z])/g, (_, $1) => $1.toUpperCase());
+}
+
+function ucFirst(value) {
+  return value[0].toUpperCase() + value.substr(1);
+}
+
 export default class Resolver {
   constructor(rootContainer, directory, hooks) {
     if (typeof rootContainer === 'string') {
@@ -81,7 +89,7 @@ export default class Resolver {
 
     entryFiles.forEach(entry => {
       const properties = entry.split('/');
-      const value = properties.shift();
+      const value = ucFirst(camelCase(properties.shift()));
 
       const definitionFile = path.join(cwd, entry);
       const definition = Resolver.loadFile(definitionFile);
@@ -107,7 +115,7 @@ export default class Resolver {
       let propName;
 
       while (properties.length) {
-        propName = properties.shift();
+        propName = camelCase(properties.shift());
 
         if (!target[propName]) {
           if (isInjectable && !properties.length) {
