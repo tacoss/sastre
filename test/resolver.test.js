@@ -1,11 +1,9 @@
-'use strict';
+import td from 'testdouble';
+import { expect } from 'chai';
 
 /* eslint-disable no-unused-expressions */
 
-const Resolver = require('../lib/resolver');
-
-const expect = require('chai').expect;
-const td = require('testdouble');
+import Resolver from '../src/resolver';
 
 /* global it, describe, beforeEach, afterEach */
 

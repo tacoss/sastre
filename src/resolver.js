@@ -1,12 +1,10 @@
-'use strict';
+import glob from 'glob';
+import path from 'path';
+import fs from 'fs';
 
-const Exception = require('./exception');
-const Injector = require('./injector');
-const Container = require('./container');
-
-const glob = require('glob');
-const path = require('path');
-const fs = require('fs');
+import Exception from './exception';
+import Injector from './injector';
+import Container from './container';
 
 const ALLOWED_HOOKS = ['before', 'after'];
 
@@ -44,7 +42,7 @@ function assignProps(target) {
   return target;
 }
 
-class Resolver {
+export default class Resolver {
   constructor(rootContainer, directory, hooks) {
     if (typeof rootContainer === 'string') {
       hooks = directory;
@@ -168,5 +166,3 @@ class Resolver {
     return this._container.get(name, this._decorators.after);
   }
 }
-
-module.exports = Resolver;

@@ -1,12 +1,10 @@
-'use strict';
+import td from 'testdouble';
+import { expect } from 'chai';
 
 /* eslint-disable no-unused-expressions */
 
-const Container = require('../lib/container');
-const Injector = require('../lib/injector');
-
-const td = require('testdouble');
-const expect = require('chai').expect;
+import Container from '../src/container';
+import Injector from '../src/injector';
 
 /* global it, describe, beforeEach, afterEach */
 

@@ -1,10 +1,8 @@
-'use strict';
+import { inspect } from 'util';
+import Exception from './exception';
 
 const RESOLVED_STATE = Symbol('@@Resolved');
 const IS_INJECTABLE = Symbol('@@Injector');
-
-const Exception = require('./exception');
-const inspect = require('util').inspect;
 
 function info(value, prop) {
   return Object.getOwnPropertyDescriptor(value, prop);
@@ -35,7 +33,7 @@ function functionInjector(definition) {
     : definition;
 }
 
-class Injector {
+export default class Injector {
   constructor(definition, injectables) {
     if (typeof definition !== 'function') {
       throw new Exception(`Cannot inject non-callable values, given ${inspect(definition)}`);
@@ -196,5 +194,3 @@ class Injector {
     return this._definition;
   }
 }
-
-module.exports = Injector;

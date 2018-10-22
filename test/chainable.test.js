@@ -1,12 +1,10 @@
-'use strict';
+import td from 'testdouble';
+import { expect } from 'chai';
 
 /* eslint-disable no-unused-expressions */
 
-const Chainable = require('../lib/chainable');
-const Container = require('../lib/container');
-
-const expect = require('chai').expect;
-const td = require('testdouble');
+import Chainable from '../src/chainable';
+import Container from '../src/container';
 
 /* global it, describe */
 

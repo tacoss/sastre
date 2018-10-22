@@ -1,10 +1,8 @@
-'use strict';
+import { inspect } from 'util';
+import Exception from './exception';
+import Injector from './injector';
 
-const Exception = require('./exception');
-const Injector = require('./injector');
-const inspect = require('util').inspect;
-
-class Container {
+export default class Container {
   constructor(rootContainer, dependencies) {
     Object.assign(this, dependencies);
 
@@ -87,5 +85,3 @@ class Container {
     return target;
   }
 }
-
-module.exports = Container;

@@ -1,9 +1,7 @@
-'use strict';
+import { inspect } from 'util';
+import Exception from './exception';
 
-const Exception = require('./exception');
-const inspect = require('util').inspect;
-
-class Chainable {
+export default class Chainable {
   constructor(context, middleware) {
     if (!middleware || Array.isArray(middleware) || typeof middleware !== 'object') {
       throw new Exception(`Invalid middleware, given ${inspect(middleware)}`);
@@ -51,5 +49,3 @@ class Chainable {
     };
   }
 }
-
-module.exports = Chainable;
