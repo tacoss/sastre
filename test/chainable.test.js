@@ -117,7 +117,7 @@ describe('Chainable', () => {
       });
 
       return Promise.all([
-        container.get('dep1', after),
+        container.get('dep1', { after }),
         container.get('dep1')(ctx => ctx.a()),
         container.get('dep1')(ctx => ctx.a.b()),
         container.get('dep1')(ctx => ctx.a.b.c()),

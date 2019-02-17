@@ -82,10 +82,10 @@ describe('Container', () => {
     }
 
     describe('get', () => {
-      let afterCallback;
+      let after;
 
       beforeEach(() => {
-        afterCallback = td.func('decorator.after');
+        after = td.func('decorator.after');
       });
 
       afterEach(() => {
@@ -145,27 +145,27 @@ describe('Container', () => {
         });
 
         const resolver = Object.assign({
-          get: name => container.get(name, afterCallback),
+          get: name => container.get(name, { after }),
         }, container);
 
         const result = Injector.bind(resolver, dep1);
 
         expect(result()).to.eql({ value: 42 });
-        expect(td.explain(afterCallback).callCount).to.eql(1);
+        expect(td.explain(after).callCount).to.eql(1);
 
         // should unlock decorated values once
         function Test() {}
 
-        td.when(afterCallback('dep1', td.matchers.isA(Object)))
+        td.when(after('dep1', td.matchers.isA(Object)))
           .thenReturn(Test);
 
         expect(container._lock.dep1).to.be.undefined;
-        expect(container.get('dep1', afterCallback)).to.eql(Test);
+        expect(container.get('dep1', { after })).to.eql(Test);
         expect(container._lock.dep1).to.be.false;
-        expect(container.get('dep1', afterCallback)).to.eql(Test);
-        expect(container._lock.dep1).to.be.true;
+        expect(container.get('dep1', { after })).to.eql({});
+        expect(container._lock.dep1).to.be.false;
 
-        expect(td.explain(afterCallback).callCount).to.eql(3);
+        expect(td.explain(after).callCount).to.eql(2);
       });
 
       it('should unwrap resolved Injector instances before any extension', () => {
@@ -185,7 +185,7 @@ describe('Container', () => {
         const returnedValue = new Injector(Noop, { dep1 });
         const injectableValue = new Injector(Value, { get dep1() { return dep1; } });
 
-        td.when(afterCallback('test', empty))
+        td.when(after('test', empty))
           .thenReturn(-1);
 
         const container = new Container(null, {
@@ -201,24 +201,14 @@ describe('Container', () => {
         });
 
 
-        expect(container.get('withCtx', afterCallback)).to.eql({ _value: 42 });
-        expect(container.get('plain', afterCallback)).to.eql(Noop);
+        expect(container.get('withCtx', { after })).to.eql({});
+        expect(container.get('plain', { after })).to.eql(Noop);
 
-        const result = container.get('test', afterCallback);
+        const result = container.get('test', { after });
 
-        expect(td.explain(afterCallback).callCount).to.eql(3);
-        expect(container.get('raw')).to.eql({});
+        expect(td.explain(after).callCount).to.eql(3);
+        expect(container.get('raw')).to.eql(null);
         expect(result).to.eql(-1);
-      });
-
-      it('should report any failure during decoration', () => {
-        expect(() => {
-          new Container(null, {
-            values: {
-              undef: {},
-            },
-          }).get('undef');
-        }).to.throw("Definition of 'undef' failed. Cannot read property 'undef' of undefined");
       });
     });
   });
