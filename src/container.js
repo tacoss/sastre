@@ -17,7 +17,7 @@ export default class Container {
     });
   }
 
-  static unwrap(resolver, definition, defCallbacks) {
+  static unwrap(resolver, definition, hooks) {
     if (!definition || typeof definition === 'function' || typeof definition !== 'object') {
       return definition;
     }
@@ -28,9 +28,9 @@ export default class Container {
       const value = definition[propName];
 
       if (Injector.supports(value)) {
-        target[propName] = Injector.bind(resolver, value, defCallbacks);
+        target[propName] = Injector.bind(resolver, value, hooks);
       } else {
-        target[propName] = Container.unwrap(resolver, value, defCallbacks);
+        target[propName] = Container.unwrap(resolver, value, hooks);
       }
     });
 
@@ -41,17 +41,7 @@ export default class Container {
     return this._root;
   }
 
-  get(value, callbacks) {
-    // this solution is bad at handling circular-refs... so resolving top-level values would not lock
-    // children requests, e.g. Main cannot be accessed from within methods, so we need to store
-    // the target and return it all the time... so, lastly, it gets updated by reference?
-
-    // worst case is when initial value should be returned instead of decorated one?
-
-    if (!this._lock[value] && callbacks.before) {
-      this.values[value] = callbacks.before(value, this.values[value]) || this.values[value];
-    }
-
+  get(value, hooks) {
     let target = this.values[value];
 
     if (target === Injector.Symbol) {
@@ -67,7 +57,7 @@ export default class Container {
         const Class = target.valueOf();
 
         if (Class.prototype.constructor.length !== 1) {
-          return callbacks.after(value, Class) || Class;
+          return hooks.after(value, Class) || Class;
         }
       }
 
@@ -78,14 +68,7 @@ export default class Container {
       this._lock[value] = true;
 
       try {
-        const extensions = Container.unwrap(this, this.registry[value], callbacks);
-        const decorated = callbacks.after(value, Injector.assign(target, extensions));
-
-        if (decorated && decorated !== target) {
-          this._lock[value] = false;
-
-          return decorated;
-        }
+        hooks.after(value, Injector.assign(target, Container.unwrap(this, this.registry[value], hooks)));
       } catch (e) {
         throw new Exception(`Definition of '${value}' failed. ${e.message}`, e);
       }
