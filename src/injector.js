@@ -103,13 +103,9 @@ export default class Injector {
     const deps = definition._dependencies;
     const wrap = definition._factory;
 
-    if (resolver._proxy) {
-      return wrap(resolver._proxy);
-    }
-
     const resolved = {};
     const values = {};
-    const proxy = resolver._proxy = {};
+    const proxy = {};
 
     Object.getOwnPropertyNames(deps).forEach(key => {
       const propName = key.replace(/^get/, '');

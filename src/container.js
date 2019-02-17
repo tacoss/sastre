@@ -45,7 +45,7 @@ export default class Container {
     let target = this.values[value];
 
     if (target === Injector.Symbol) {
-      return {};
+      return null;
     }
 
     if (!target || Array.isArray(target) || ['object', 'function'].indexOf(typeof target) === -1) {
@@ -57,7 +57,7 @@ export default class Container {
         const Class = target.valueOf();
 
         if (Class.prototype.constructor.length !== 1) {
-          return hooks.after(value, Class) || Class;
+          return (hooks && hooks.after(value, Class)) || Class;
         }
       }
 
@@ -68,7 +68,7 @@ export default class Container {
       this._lock[value] = true;
 
       try {
-        target = hooks.after(value, Injector.assign(target, Container.unwrap(this, this.registry[value], hooks)))
+        target = hooks && hooks.after(value, Injector.assign(target, Container.unwrap(this, this.registry[value], hooks)));
 
         this._lock[value] = false;
 
