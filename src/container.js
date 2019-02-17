@@ -42,6 +42,12 @@ export default class Container {
   }
 
   get(value, callback) {
+    // console.log('@get', this._lock[value], value);
+
+    // this solution is bad at handling circular-refs... so resolving top-level values would not lock
+    // children requests, e.g. Main cannot be accessed from within methods, so we need to store
+    // the target and return it all the time... so, lastly, it gets updated by reference?
+
     let target = this.values[value];
 
     if (target === Injector.Symbol) {
@@ -72,6 +78,8 @@ export default class Container {
         const decorated = callback(value, Injector.assign(target, extensions));
 
         if (decorated && decorated !== target) {
+          Object.assign(target, decorated);
+
           this.values[value] = decorated;
           this._lock[value] = false;
 
