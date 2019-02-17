@@ -68,7 +68,11 @@ export default class Container {
       this._lock[value] = true;
 
       try {
-        hooks.after(value, Injector.assign(target, Container.unwrap(this, this.registry[value], hooks)));
+        target = hooks.after(value, Injector.assign(target, Container.unwrap(this, this.registry[value], hooks)))
+
+        this._lock[value] = false;
+
+        return target || this.values[value];
       } catch (e) {
         throw new Exception(`Definition of '${value}' failed. ${e.message}`, e);
       }
