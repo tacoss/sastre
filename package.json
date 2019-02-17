@@ -2,15 +2,15 @@
   "name": "sastre",
   "version": "0.1.1",
   "description": "Module confection at its finest.",
-  "main": "dist/sastre.cjs.js",
-  "module": "dist/sastre.es.js",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "files": [
     "dist/*.js"
   ],
   "scripts": {
     "dev": "npm run test -- -w",
     "mocha": "_mocha --exit --recursive -bR spec",
-    "build": "bili src/index.js --target node --js buble --format es,cjs",
+    "build": "bili src/index.js --minimal --format es --format cjs",
     "node": "node -r module-alias/register --",
     "start": "npm run node -- example",
     "test": "npm run test:unit --",
@@ -44,11 +44,11 @@
     "module-alias": "^2.1.0",
     "nyc": "^13.1.0",
     "sequelize": "^4.38.0",
-    "sqlite3": "^4.0.1",
+    "sqlite3": "^4.0.6",
     "testdouble": "^3.8.2"
   },
   "_moduleAliases": {
     "@src": "./example/src",
-    "@lib": "./dist/sastre.cjs.js"
+    "@lib": "./dist/index.js"
   }
 }
