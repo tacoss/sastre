@@ -65,11 +65,11 @@ export default class Resolver {
 
     Object.defineProperty(this, '_container', {
       enumerable: false,
-      value: new Container(rootContainer, Resolver.scanFiles(directory, this._decorators.before)),
+      value: new Container(rootContainer, Resolver.scanFiles(directory)),
     });
   }
 
-  static scanFiles(cwd, cb) {
+  static scanFiles(cwd) {
     const resolverInfo = {
       registry: {},
       values: {},
@@ -133,7 +133,7 @@ export default class Resolver {
       const definition = resolverInfo.values[prop];
 
       if (typeof cb === 'function' && !Injector.supports(definition)) {
-        resolverInfo.values[prop] = cb(prop, definition) || definition;
+        resolverInfo.values[prop] = definition;
       }
     });
 
@@ -171,6 +171,6 @@ export default class Resolver {
   }
 
   get(name) {
-    return this._container.get(name, this._decorators.after);
+    return this._container.get(name, this._decorators);
   }
 }

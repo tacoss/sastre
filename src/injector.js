@@ -98,7 +98,7 @@ export default class Injector {
     return target;
   }
 
-  static bind(resolver, definition, afterCallback) {
+  static bind(resolver, definition, defCallbacks) {
     const keys = Object.keys(resolver.values);
     const deps = definition._dependencies;
     const wrap = definition._factory;
@@ -139,7 +139,7 @@ export default class Injector {
         if (typeof resolved[propName] === 'undefined') {
           const newValue = method.call(resolver.valueOf(), proxy);
 
-          resolved[propName] = newValue || resolver.get(propName, afterCallback);
+          resolved[propName] = newValue || resolver.get(propName, defCallbacks);
         }
 
         return resolved[propName];
