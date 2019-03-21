@@ -68,15 +68,17 @@ export default class Container {
       this._lock[value] = true;
 
       try {
-        let retval;
+        let retval = Injector.assign(target, Container.unwrap(this, this.registry[value], hooks));
 
         if (hooks && hooks.after) {
-          retval = hooks.after(value, Injector.assign(target, Container.unwrap(this, this.registry[value], hooks)));
+          retval = hooks.after(value, retval);
         }
 
-        this._lock[value] = false;
+        if (typeof retval !== 'undefined') {
+          this.values[value] = retval;
+        }
 
-        return retval || this.values[value];
+        return this.values[value];
       } catch (e) {
         throw new Exception(`Definition of '${value}' failed. ${e.message}`, e);
       }
