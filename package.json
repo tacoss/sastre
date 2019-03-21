@@ -36,14 +36,14 @@
     "glob": "^7.1.2"
   },
   "devDependencies": {
-    "bili": "^4.2.5",
+    "bili": "^4.7.1",
     "chai": "^4.1.2",
     "codecov": "^3.0.2",
     "esm": "^3.0.84",
-    "mocha": "^5.2.0",
+    "mocha": "^6.0.2",
     "module-alias": "^2.1.0",
-    "nyc": "^13.1.0",
-    "sequelize": "^4.38.0",
+    "nyc": "^13.3.0",
+    "sequelize": "^5.1.0",
     "sqlite3": "^4.0.6",
     "testdouble": "^3.8.2"
   },
