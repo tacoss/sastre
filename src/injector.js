@@ -91,7 +91,7 @@ export default class Injector {
 
     Object.assign(target, extensions);
     Object.defineProperty(target, RESOLVED_STATE, {
-      enumrable: false,
+      enumerable: false,
       value: true,
     });
 
