@@ -153,7 +153,7 @@ describe('Container', () => {
         expect(result()).to.eql({ value: 42 });
         expect(td.explain(after).callCount).to.eql(1);
 
-        // should unlock decorated values once
+        // should keep decorated values locked
         function Test() {}
 
         td.when(after('dep1', td.matchers.isA(Object)))
@@ -161,9 +161,7 @@ describe('Container', () => {
 
         expect(container._lock.dep1).to.be.undefined;
         expect(container.get('dep1', { after })).to.eql(Test);
-        expect(container._lock.dep1).to.be.false;
-        expect(container.get('dep1', { after })).to.eql({});
-        expect(container._lock.dep1).to.be.false;
+        expect(container._lock.dep1).to.be.true;
 
         expect(td.explain(after).callCount).to.eql(2);
       });
