@@ -70,6 +70,10 @@ export default class Resolver {
   }
 
   static scanFiles(cwd, cb) {
+    if (!fs.existsSync(cwd)) {
+      throw new Error(`Invalid directory, given '${cwd}'`);
+    }
+
     const resolverInfo = {
       registry: {},
       values: {},
