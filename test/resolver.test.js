@@ -95,6 +95,19 @@ describe('Resolver', () => {
     });
 
     describe('scanFiles', () => {
+      beforeEach(() => {
+        td.replace(fs, 'existsSync');
+        td.when(fs.existsSync('.')).thenReturn(true);
+      });
+
+      afterEach(() => {
+        td.reset();
+      });
+
+      it('will fail on invalid directories', () => {
+        expect(() => new Resolver('_')).to.throw("Invalid directory, given '_'");
+      });
+
       it('will collect a registry of modules when constructed', () => {
         td.when(glob.sync('**/index.js', { cwd: '.', nosort: true }))
           .thenReturn([
