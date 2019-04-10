@@ -199,7 +199,7 @@ describe('Container', () => {
         });
 
 
-        expect(container.get('withCtx', { after })).to.eql({});
+        expect(container.get('withCtx', { after })).to.eql({ _value: 42 });
         expect(container.get('plain', { after })).to.eql(Noop);
 
         const result = container.get('test', { after });

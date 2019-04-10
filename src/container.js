@@ -71,7 +71,7 @@ export default class Container {
         let retval = Injector.assign(target, Container.unwrap(this, this.registry[value], hooks));
 
         if (hooks && hooks.after) {
-          retval = hooks.after(value, retval);
+          retval = hooks.after(value, retval) || retval;
         }
 
         if (typeof retval !== 'undefined') {
