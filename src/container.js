@@ -78,7 +78,7 @@ export default class Container {
           this.values[value] = retval;
         }
 
-        return this.values[value];
+        return retval;
       } catch (e) {
         throw new Exception(`Definition of '${value}' failed. ${e.message}`, e);
       }
