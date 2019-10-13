@@ -103,7 +103,6 @@ export default class Injector {
     const deps = definition._dependencies;
     const wrap = definition._factory;
 
-    const resolved = {};
     const values = {};
     const proxy = {};
 
@@ -132,13 +131,16 @@ export default class Injector {
       }
 
       values[propName] = () => {
-        if (typeof resolved[propName] === 'undefined') {
+        if (typeof resolver[`@${propName}`] === 'undefined') {
           const newValue = method.call(resolver.valueOf(), proxy);
 
-          resolved[propName] = newValue || resolver.get(propName, defCallbacks);
+          Object.defineProperty(resolver, `@${propName}`, {
+            value: newValue || resolver.get(propName, defCallbacks),
+            writable: false,
+          });
         }
 
-        return resolved[propName];
+        return resolver[`@${propName}`];
       };
     });
 
