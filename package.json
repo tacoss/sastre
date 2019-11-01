@@ -18,7 +18,7 @@
     "test:unit": "npm run mocha -- -r esm 'test/*.test.js'",
     "test:example": "npm run mocha -- -r module-alias/register 'example/**/*.test.js'",
     "test:coverage": "npm run coverage && npm run report",
-    "coverage": "nyc -x '**/tests/**' -x '**/*.test.js' -- npm run test:unit",
+    "coverage": "nyc --silent -x '**/tests/**' -x '**/*.test.js' -- npm run test:unit",
     "codecov": "codecov --file=coverage/lcov.info -e TRAVIS_NODE_VERSION",
     "report": "nyc report",
     "prepublish": "npm run build"
