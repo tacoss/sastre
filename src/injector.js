@@ -131,13 +131,10 @@ export default class Injector {
       }
 
       values[propName] = () => {
-        if (typeof resolver[`@${propName}`] === 'undefined') {
+        if (!resolver[`@${propName}`]) {
           const newValue = method.call(resolver.valueOf(), proxy);
 
-          Object.defineProperty(resolver, `@${propName}`, {
-            value: newValue || resolver.get(propName, defCallbacks),
-            writable: false,
-          });
+          resolver[`@${propName}`] = newValue || resolver.get(propName, defCallbacks);
         }
 
         return resolver[`@${propName}`];
