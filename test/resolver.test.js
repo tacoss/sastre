@@ -37,7 +37,9 @@ describe('Resolver', () => {
 
     describe('constructor', () => {
       function Foo() {}
-      const foo = () => 'BAR';
+      function Bar() {}
+      const foo = () => 'FOO';
+      const bar = () => 'BAR';
       const cwd = '.';
 
       let scanCallback;
@@ -59,6 +61,16 @@ describe('Resolver', () => {
               foo: Foo,
             },
           });
+
+        td.when(Resolver.scanFiles('extra', decoratorInput))
+          .thenReturn({
+            registry: {
+              bar,
+            },
+            values: {
+              bar: Bar,
+            },
+          });
       });
 
       it('should work as expected', () => {
@@ -72,6 +84,11 @@ describe('Resolver', () => {
 
       it('can use any given callback as after-decorator', () => {
         expect(new Resolver(cwd, () => -1)._decorators.after()).to.eql(-1);
+      });
+
+      it('should scan from multiple directories at once', () => {
+        expect(new Resolver([cwd, 'extra'])._container.registry).to.be.deep.eql({ foo, bar });
+        expect(new Resolver([cwd, 'extra'])._container.values).to.be.deep.eql({ foo: Foo, bar: Bar });
       });
     });
 

@@ -52,7 +52,7 @@ function ucFirst(value) {
 
 export default class Resolver {
   constructor(rootContainer, directory, hooks) {
-    if (typeof rootContainer === 'string') {
+    if (typeof rootContainer === 'string' || Array.isArray(rootContainer)) {
       hooks = directory;
       directory = rootContainer;
       rootContainer = undefined;
@@ -63,9 +63,23 @@ export default class Resolver {
       value: getDecorators(hooks, rootContainer),
     });
 
+    // merge multiple sources into a single container instance
+    const handlers = (!Array.isArray(directory) ? [directory]: directory)
+      .reduce((container, cwd) => {
+        if (!container) {
+          container = Resolver.scanFiles(cwd, this._decorators.before);
+        } else {
+          const result = Resolver.scanFiles(cwd, this._decorators.before);
+
+          Object.assign(container.registry, result.registry);
+          Object.assign(container.values, result.values);
+        }
+        return container;
+      }, null);
+
     Object.defineProperty(this, '_container', {
       enumerable: false,
-      value: new Container(rootContainer, Resolver.scanFiles(directory, this._decorators.before)),
+      value: new Container(rootContainer, handlers),
     });
   }
 
