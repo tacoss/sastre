@@ -79,19 +79,22 @@ describe('Chainable', () => {
       expect(td.explain(inc).callCount).to.eql(0);
 
       return Promise.resolve()
-        .then(() => reset() || test(ctx => ctx.a()))
+        .then(reset)
+        .then(() => test(ctx => ctx.a()))
         .then(() => {
           expect(callCount).to.eql(1);
           expect(values).to.eql(['A']);
           expect(td.explain(inc).callCount).to.eql(1);
         })
-        .then(() => reset() || test(ctx => ctx.a.b()))
+        .then(reset)
+        .then(() => test(ctx => ctx.a.b()))
         .then(() => {
           expect(callCount).to.eql(3);
           expect(values).to.eql(['A', 'B']);
           expect(td.explain(inc).callCount).to.eql(3);
         })
-        .then(() => reset() || test(ctx => ctx.a.c.b()))
+        .then(reset)
+        .then(() => test(ctx => ctx.a.c.b()))
         .then(() => {
           expect(callCount).to.eql(6);
           expect(values).to.eql(['A', 'C', 'B']);
@@ -134,9 +137,9 @@ describe('Chainable', () => {
         }
 
         return new Chainable(null, {
-          bar(req, args) {
+          bar() {
             return Promise.resolve()
-              .then(() => foo(req, args))
+              .then(() => foo())
               .then(() => {
                 throw new Error('IT_SHALL_NOT_PASS');
               });
