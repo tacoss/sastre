@@ -8,6 +8,10 @@ import Resolver from '../src/resolver';
 /* global it, describe, beforeEach, afterEach */
 
 describe('Resolver', () => {
+  afterEach(() => {
+    td.reset();
+  });
+
   describe('static methods', () => {
     const fs = require('fs');
     const path = require('path');
@@ -29,10 +33,6 @@ describe('Resolver', () => {
         return Array.prototype.slice.call(arguments).join('/');
       });
       td.replace(glob, 'sync', globCallback);
-    });
-
-    afterEach(() => {
-      td.reset();
     });
 
     describe('constructor', () => {
@@ -113,12 +113,7 @@ describe('Resolver', () => {
 
     describe('scanFiles', () => {
       beforeEach(() => {
-        td.replace(fs, 'existsSync');
         td.when(fs.existsSync('.')).thenReturn(true);
-      });
-
-      afterEach(() => {
-        td.reset();
       });
 
       it('will fail on invalid directories', () => {
@@ -218,10 +213,6 @@ describe('Resolver', () => {
         values: 'OK',
         registry: 'OK',
       };
-    });
-
-    afterEach(() => {
-      td.reset();
     });
 
     describe('get', () => {
