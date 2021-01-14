@@ -17,7 +17,7 @@ export default class Container {
     });
   }
 
-  static unwrap(resolver, definition, hooks) {
+  static unwrap(container, definition, hooks) {
     if (!definition || typeof definition === 'function' || typeof definition !== 'object') {
       return definition;
     }
@@ -28,9 +28,9 @@ export default class Container {
       const value = definition[propName];
 
       if (Injector.supports(value)) {
-        target[propName] = Injector.bind(resolver, value, hooks);
+        target[propName] = Injector.bind(container, value, hooks);
       } else {
-        target[propName] = Container.unwrap(resolver, value, hooks);
+        target[propName] = Container.unwrap(container, value, hooks);
       }
     });
 
@@ -68,7 +68,7 @@ export default class Container {
       this._lock[value] = true;
 
       try {
-        let retval = Injector.assign(target, refresh, Container.unwrap(this, this.registry[value], hooks),);
+        let retval = Injector.assign(target, refresh, Container.unwrap(this, this.registry[value], hooks));
 
         if (hooks && hooks.after) {
           retval = hooks.after(value, retval) || retval;

@@ -1,8 +1,7 @@
-module.exports = ctx =>
-  function add(userInfo) {
-    return ctx.User.create(userInfo).then(user => {
-      user.token = ctx.Token.makeId();
+module.exports = ({ Token }) => function add(userInfo) {
+  return this.create(userInfo).then(user => {
+    user.token = Token.makeId();
 
-      return user.save();
-    });
-  };
+    return user.save();
+  });
+};
