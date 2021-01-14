@@ -7,6 +7,7 @@ class ModelsResolver {
     const $ = new Resolver(container, modelsDir, {
       before(_name, definition) {
         DB.add({ $schema: { id: _name, ...definition } });
+        return DB.$refs[_name].$class;
       },
       after(_name, definition) {
         if (DB.sequelize._resolved && DB.$refs[_name]) {
