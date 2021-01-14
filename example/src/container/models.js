@@ -6,8 +6,7 @@ class ModelsResolver {
     const DB = new Sequelizer('sqlite::memory:');
     const $ = new Resolver(container, modelsDir, {
       before(_name, definition) {
-        DB.add({ $schema: { id: _name, ...definition } });
-        return DB.$refs[_name].$class;
+        return DB.add({ $schema: { id: _name, ...definition } }, true);
       },
       after(_name, definition) {
         if (DB.sequelize._resolved && DB.$refs[_name]) {
