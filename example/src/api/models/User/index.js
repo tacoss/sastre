@@ -1,9 +1,8 @@
-const Sequelize = require('sequelize');
-
 const User = {
-  attributes: {
+  type: 'object',
+  properties: {
     name: {
-      type: Sequelize.STRING,
+      type: 'string',
     },
   },
 };

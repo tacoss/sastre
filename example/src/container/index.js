@@ -10,11 +10,11 @@ class Container {
   }
 
   getController(name) {
-    return this.controllers.get(name, this);
+    return this.controllers.get(name);
   }
 
   getModel(name) {
-    return this.models.get(name, this);
+    return this.models.get(name);
   }
 }
 

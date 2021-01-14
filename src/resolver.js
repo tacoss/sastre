@@ -188,7 +188,7 @@ export default class Resolver {
     return this._container.registry;
   }
 
-  get(name) {
-    return this._container.get(name, this._decorators);
+  get(name, refresh) {
+    return this._container.get(name, this._decorators, refresh);
   }
 }

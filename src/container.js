@@ -41,7 +41,7 @@ export default class Container {
     return this._root;
   }
 
-  get(value, hooks) {
+  get(value, hooks, refresh) {
     let target = this.values[value];
 
     if (target === Injector.Symbol) {
@@ -64,11 +64,11 @@ export default class Container {
       target = Injector.use(this, target);
     }
 
-    if (!(this._lock[value] || Injector.hasLocked(target))) {
+    if (refresh || !(this._lock[value] || Injector.hasLocked(target))) {
       this._lock[value] = true;
 
       try {
-        let retval = Injector.assign(target, Container.unwrap(this, this.registry[value], hooks));
+        let retval = Injector.assign(target, refresh, Container.unwrap(this, this.registry[value], hooks),);
 
         if (hooks && hooks.after) {
           retval = hooks.after(value, retval) || retval;

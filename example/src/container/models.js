@@ -1,29 +1,30 @@
-const Sequelize = require('sequelize');
+const Sequelizer = require('json-schema-sequelizer');
 const { Resolver } = require('@lib'); // eslint-disable-line
 
 class ModelsResolver {
   constructor(container, modelsDir) {
-    const sequelize = new Sequelize('sqlite::memory:');
-
-    return new Resolver(container, modelsDir, {
-      before(name, definition) {
-        if (typeof definition !== 'function') {
-          const options = Object.assign({}, definition);
-          const attributes = options.attributes;
-
-          delete options.attributes;
-
-          return sequelize.define(name, attributes || {}, options);
-        }
+    const DB = new Sequelizer('sqlite::memory:');
+    const $ = new Resolver(container, modelsDir, {
+      before(_name, definition) {
+        DB.add({ $schema: { id: _name, ...definition } });
       },
-      after(name, definition) {
-        Object.assign(definition, definition.classMethods);
-        Object.assign(definition.prototype, definition.instanceMethods);
-
-        delete definition.classMethods;
-        delete definition.instanceMethods;
+      after(_name, definition) {
+        if (DB.sequelize._resolved && DB.$refs[_name]) {
+          if (!DB.models[_name]._resolved) {
+            Object.assign(DB.models[_name], definition.classMethods);
+            DB.models[_name]._resolved = true;
+          }
+          return DB.models[_name];
+        }
+        return definition;
       },
     });
+    $.database = DB;
+    $.connect = () => DB.connect();
+    DB.ready(() => {
+      Object.keys(DB.$refs).forEach(k => $.get(k, true));
+    });
+    return $;
   }
 }
 

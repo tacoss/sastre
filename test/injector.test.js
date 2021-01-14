@@ -45,7 +45,7 @@ describe('Injector', () => {
       it('can assign and lock injectables once', () => {
         const target = {};
 
-        Injector.assign(target, {
+        Injector.assign(target, false, {
           foo: 'BAR',
         });
 
@@ -53,9 +53,21 @@ describe('Injector', () => {
           foo: 'BAR',
         });
 
-        expect(() => Injector.assign(target, {
+        expect(() => Injector.assign(target, false, {
           baz: 'BUZZ',
         })).to.throw('Cannot assign to locked values');
+      });
+
+      it('can reassign and refresh values', () => {
+        const target = {};
+
+        Injector.assign(target, false, {
+          foo: 'BAR',
+        });
+
+        expect(() => Injector.assign(target, true, {
+          baz: 'BUZZ',
+        })).not.to.throw();
       });
     });
 

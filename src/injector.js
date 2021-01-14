@@ -80,12 +80,12 @@ export default class Injector {
     return target instanceof Injector;
   }
 
-  static assign(target, extensions) {
+  static assign(target, refresh, extensions) {
     if (['object', 'function'].indexOf(typeof target) === -1 || Array.isArray(target)) {
       throw new Exception(`Target is not an object, given ${inspect(target)}`);
     }
 
-    if (target[RESOLVED_STATE]) {
+    if (!refresh && target[RESOLVED_STATE]) {
       throw new Exception('Cannot assign to locked values');
     }
 

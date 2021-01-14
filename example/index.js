@@ -11,17 +11,19 @@ const token = new Token();
 expect(Token.makeId()).to.eql(42);
 expect(token instanceof Token).to.be.true;
 
-// injected class-constructor
-const userController = container.getController('UserController');
-
-// sequelize model
-const User = container.getModel('User');
-
 function run() {
   return Promise.resolve()
-    .then(() => User.sync({ force: true }))
-    .then(() => userController.add({ name: 'Example' }))
-    .then(result => console.log(result.get()));
+    .then(() => console.log(container.getModel('User').classMethods.add))
+    .then(() => container.models.connect())
+    .then(() => console.log(container.models.database.models.User.add))
+    .then(() => container.getModel('User'))
+    .then(() => console.log(container.models.database.models.User.add))
+    .then(() => container.getModel('User'))
+    .then(User => User.sync({ force: true }))
+    .then(() => container.getController('UserController'))
+    .then(userController => userController.add({ name: 'Example' }))
+    .then(result => console.log(result.get()))
+    .catch(e => console.log('E_FAIL', e));
 }
 
 module.exports = {
