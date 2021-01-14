@@ -1,6 +1,6 @@
 {
   "name": "sastre",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "description": "Module confection at its finest.",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
