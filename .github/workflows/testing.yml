@@ -1,0 +1,14 @@
+name: ci
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: mkdir coverage
+      - run: npm run build
+      - run: npm run test:example
+      - run: npm run test:ci
+      - run: npm run codecov
