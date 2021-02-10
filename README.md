@@ -172,7 +172,7 @@ But loading parent stuff for common fixtures it's still an issue, e.g. `../../..
 
 E.g. you want a `Session` object within a method.
 
-Using `Session() { ... }` is not enough clear, becase `Session()` says nothing.
+Using `Session() { ... }` is not enough clear, because `Session()` says nothing.
 
 Instead, `getSession() { ... }` helps to understand the purpose of the method... effectively.
 
