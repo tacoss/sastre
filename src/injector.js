@@ -104,7 +104,16 @@ export default class Injector {
     const wrap = definition._factory;
 
     const values = {};
-    const proxy = {};
+    const proxy = new Proxy({}, {
+      get: (obj, key) => {
+        if (key in obj) return obj[key];
+        if (!values[key]) {
+          throw new Exception(`Missing '${key}' provider`);
+        }
+
+        return values[key]();
+      },
+    });
 
     Object.getOwnPropertyNames(deps).forEach(key => {
       const propName = key.replace(/^get/, '');
@@ -139,19 +148,6 @@ export default class Injector {
 
         return resolver[`@${propName}`];
       };
-    });
-
-    keys.forEach(key => {
-      Object.defineProperty(proxy, key, {
-        enumerable: false,
-        get: () => {
-          if (!values[key]) {
-            throw new Exception(`Missing '${key}' provider`);
-          }
-
-          return values[key]();
-        },
-      });
     });
 
     return wrap(proxy);

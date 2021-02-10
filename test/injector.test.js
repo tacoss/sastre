@@ -171,11 +171,8 @@ describe('Injector', () => {
       it('should fail if proxy cannot resolve the given provider', () => {
         expect(() => {
           Injector.bind({
-            values: {
-              dep1() {},
-              undef() {},
-            },
-          }, new Injector(ctx => ctx.undef, { dep1() {} }));
+            values: {},
+          }, new Injector(ctx => [ctx.undef], {}));
         }).to.throw("Missing 'undef' provider");
       });
 
