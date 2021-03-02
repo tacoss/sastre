@@ -1,5 +1,6 @@
 import td from 'testdouble';
 import { expect } from 'chai';
+import { inspect } from 'util';
 
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-eval */
@@ -206,6 +207,17 @@ describe('Injector', () => {
         expect(result).to.eql(['ONE', 'TWO']);
         expect(td.explain(dep1Callback).callCount).to.eql(1);
         expect(td.explain(dep2Callback).callCount).to.eql(2);
+      });
+
+      it('should serialize getters for @@accessors', () => {
+        let obj;
+        const noop = () => {};
+        const testFn = new Injector(x => (obj = x, noop), someInjectables);
+        const result = Injector.bind(fakeResolver, testFn)();
+
+        expect(obj[inspect.custom]).to.eql('Injector<dep1, dep2>');
+        expect(obj[Symbol.toStringTag]).to.eql('Injector');
+        expect([...obj]).to.eql(['dep1', 'dep2']);
       });
     });
 

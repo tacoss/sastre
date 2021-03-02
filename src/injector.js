@@ -106,6 +106,10 @@ export default class Injector {
     const values = {};
     const proxy = new Proxy({}, {
       get: (obj, key) => {
+        if (inspect.custom === key) return `Injector<${Object.keys(deps).join(', ')}>`;
+        if (Symbol.iterator === key) return [][key].bind(Object.keys(deps));
+        if (Symbol.toStringTag === key) return 'Injector';
+
         if (key in obj) return obj[key];
         if (!values[key]) {
           throw new Exception(`Missing '${key}' provider`);
