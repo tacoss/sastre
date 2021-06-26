@@ -210,9 +210,22 @@ describe('Resolver', () => {
 
       _container = {
         get: getCallback,
+        keys: [1, 2],
         values: 'OK',
         registry: 'OK',
       };
+    });
+
+    describe('forEach', () => {
+      it('can iterate registry members', () => {
+        const each = td.func('forEach');
+
+        expect(() => Resolver.prototype.forEach.call({
+          _container,
+        }, each)).not.to.throw();
+
+        expect(td.explain(each).callCount).to.eql(2);
+      });
     });
 
     describe('get', () => {

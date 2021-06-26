@@ -110,7 +110,6 @@ export default class Injector {
         if (Symbol.iterator === key) return [][key].bind(Object.keys(deps));
         if (Symbol.toStringTag === key) return 'Injector';
 
-        if (key in obj) return obj[key];
         if (!values[key]) {
           throw new Exception(`Missing '${key}' provider`);
         }

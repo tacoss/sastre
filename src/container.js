@@ -74,9 +74,7 @@ export default class Container {
           retval = hooks.after(value, retval) || retval;
         }
 
-        if (typeof retval !== 'undefined') {
-          this.values[value] = retval;
-        }
+        this.values[value] = retval;
 
         return retval;
       } catch (e) {

@@ -208,6 +208,25 @@ describe('Container', () => {
         expect(container.get('raw')).to.eql(null);
         expect(result).to.eql(-1);
       });
+
+      it('should handle hook-failures from getters', () => {
+        const c = new Container(null, {
+          values: {},
+          registry: {},
+        });
+
+        c.values.test = {
+          truth: () => 42,
+        };
+
+        function fail() {
+          throw new Error('OSOM');
+        }
+
+        expect(c.get('test', null, true).truth()).to.eql(42);
+        expect(c.get('test', { after: () => null }, true).truth()).to.eql(42);
+        expect(() => c.get('test', { after: fail }, true).truth()).to.throw(/Definition of.*OSOM/);
+      });
     });
   });
 });
