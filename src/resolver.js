@@ -91,6 +91,7 @@ export default class Resolver {
     const resolverInfo = {
       registry: {},
       values: {},
+      keys: [],
     };
 
     const entryFiles = glob
@@ -126,6 +127,8 @@ export default class Resolver {
       if (!isInjectable && fs.existsSync(providerFile)) {
         throw new Exception(`Unexpected provider file, given ${providerFile}`);
       }
+
+      if (!resolverInfo.keys.includes(value)) resolverInfo.keys.push(value);
 
       resolverInfo.registry[value] = resolverInfo.registry[value] || {};
 
@@ -186,6 +189,10 @@ export default class Resolver {
 
   get registry() {
     return this._container.registry;
+  }
+
+  forEach(callback) {
+    this._container.keys.forEach(key => callback(this[key]));
   }
 
   get(name, refresh) {
