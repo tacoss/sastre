@@ -135,6 +135,10 @@ describe('Resolver', () => {
         td.replace(Resolver, 'useFile', useCallback);
         td.replace(Resolver, 'loadFile', loadCallback);
 
+        td.when(fs.existsSync('./Example/index.d.ts')).thenReturn(true);
+        td.when(fs.existsSync('./Test/sub/index.d.ts')).thenReturn(true);
+        td.when(fs.existsSync('./Test/sub/nested/index.d.ts')).thenReturn(true);
+
         td.when(Resolver.loadFile('./Name/prop/injectableMethod/index.js')).thenReturn(ctx => () => ctx.undef);
         td.when(Resolver.loadFile('./Name/prop/method/index.js')).thenReturn(function method() {});
         td.when(Resolver.loadFile('./Example/index.js')).thenReturn(class Example {});
@@ -150,6 +154,34 @@ describe('Resolver', () => {
           });
 
         const container = new Resolver('.');
+        expect(Resolver.typesOf(container).map(x => (x.type ? [`// ${x.type}`] : []).concat(x.chunk).join('\n')).join('\n')).to.eql(`
+import TestSubNestedModule from './Test/sub/nested';
+import TestSubModule from './Test/sub';
+import ExampleModule from './Example';
+interface TestModule {}
+interface OtherTestWithDashesAndModule {}
+interface NamePropInjectableMethodModule {}
+interface NamePropMethodModule {}
+// Example
+export interface ExampleInterface extends ExampleModule {}
+// Test
+export interface TestInterface extends TestModule {
+  sub: typeof TestSubModule & {
+    nested: typeof TestSubNestedModule
+  }
+}
+// OtherTest
+export interface OtherTestInterface {
+  withDashesAnd: typeof OtherTestWithDashesAndModule
+}
+// Name
+export interface NameInterface {
+  prop: {
+    injectableMethod: typeof NamePropInjectableMethodModule
+    method: typeof NamePropMethodModule
+  }
+}
+`.trim());
 
         expect(container._decorators.before).not.to.be.undefined;
         expect(container._decorators.after).not.to.be.undefined;

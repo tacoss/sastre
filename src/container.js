@@ -41,6 +41,10 @@ export default class Container {
     return this._root;
   }
 
+  has(value) {
+    return value in this.values;
+  }
+
   get(value, hooks, refresh) {
     let target = this.values[value];
 

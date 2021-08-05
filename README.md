@@ -249,3 +249,48 @@ await run(({ anythingElse }) => anythingElse.test());
 ```
 
 > This would help you to chain functions in order, both sync or async are supported.
+
+### It's possible to use TypeScript?
+
+Yes, basic support for `.d.ts` files is built-in, just call `Resolve.typesOf(container)` to get an array of the samples.
+
+Each sample contains a `chunk`, a string containing the type definition, and optionally a `type` property that contains the module name, e.g.
+
+```js
+const buffer = Resolver.typesOf(container).map(x => (x.type ? [`// ${x.type}`] : []).concat(x.chunk).join('\n')).join('\n');
+```
+
+The resulting `buffer` should be something like this:
+
+```ts
+import TestSubNestedModule from './Test/sub/nested';
+import TestSubModule from './Test/sub';
+import ExampleModule from './Example';
+interface TestModule {}
+interface OtherTestWithDashesAndModule {}
+interface NamePropInjectableMethodModule {}
+interface NamePropMethodModule {}
+// Example
+export interface ExampleInterface extends ExampleModule {}
+// Test
+export interface TestInterface extends TestModule {
+  sub: typeof TestSubModule & {
+    nested: typeof TestSubNestedModule
+  }
+}
+// OtherTest
+export interface OtherTestInterface {
+  withDashesAnd: typeof OtherTestWithDashesAndModule
+}
+// Name
+export interface NameInterface {
+  prop: {
+    injectableMethod: typeof NamePropInjectableMethodModule
+    method: typeof NamePropMethodModule
+  }
+}
+```
+
+This way you can write your modules using TypeScript, just make sure you're emitting the definitions in the same place as the generated `.js` files.
+
+> Paths are resolved from the `cwd` of the given container, so you must save this file in the same directory to resolve their `import` calls.
