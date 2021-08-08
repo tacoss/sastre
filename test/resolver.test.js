@@ -167,19 +167,19 @@ export interface ExampleInterface extends ExampleModule {}
 // Test
 export interface TestInterface extends TestModule {
   sub: typeof TestSubModule & {
-    nested: typeof TestSubNestedModule
-  }
+    nested: typeof TestSubNestedModule;
+  };
 }
 // OtherTest
 export interface OtherTestInterface {
-  withDashesAnd: typeof OtherTestWithDashesAndModule
+  withDashesAnd: typeof OtherTestWithDashesAndModule;
 }
 // Name
 export interface NameInterface {
   prop: {
-    injectableMethod: typeof NamePropInjectableMethodModule
-    method: typeof NamePropMethodModule
-  }
+    injectableMethod: typeof NamePropInjectableMethodModule;
+    method: typeof NamePropMethodModule;
+  };
 }
 `.trim());
 

@@ -214,9 +214,9 @@ export default class Resolver {
         }
 
         if (Object.keys(obj.props[key].props).length) {
-          out += `${ok ? ' &' : ''} {\n${nest(obj.props[key], path.concat(key))}${pre}}\n`;
+          out += `${ok ? ' &' : ''} {\n${nest(obj.props[key], path.concat(key))}${pre}};\n`;
         } else {
-          out += '\n';
+          out += ';\n';
         }
       });
       return out;
