@@ -131,7 +131,11 @@ export default class Resolver {
 
       const tsFile = definitionFile.replace('.js', '.d.ts');
 
-      resolverInfo.types.push({ path: [value].concat(properties.slice()), exists: fs.existsSync(tsFile) });
+      resolverInfo.types.push({
+        path: [value].concat(properties.slice()),
+        exists: fs.existsSync(tsFile),
+        filepath: tsFile,
+      });
 
       if (!resolverInfo.keys.includes(value)) resolverInfo.keys.push(value);
 
@@ -194,7 +198,6 @@ export default class Resolver {
   static typesOf(self, extend) {
     const buffer = [];
     const groups = { path: [], props: {} };
-    const methods = [];
     const definitions = self._container.types.map(x => camelCase(x.path.join('-')));
 
     function nest(obj, path) {
@@ -222,13 +225,34 @@ export default class Resolver {
       return out;
     }
 
+    function check(source, name) {
+      const matches = source.match(/export default (\w+)/);
+
+      if (!matches) throw new TypeError(`Missing default export for '${name}Module'`);
+      if (source.includes(`export const ${name}`)) return true;
+      if (!(source.includes(`class ${matches[1]}`)
+        || source.includes(`type ${matches[1]}`)
+        || source.includes(`interface ${matches[1]}`)
+        || source.includes('export default function'))
+      ) return true;
+      return false;
+    }
+
     self._container.types.forEach(type => {
       const identifier = camelCase(type.path.join('-'));
 
       if (type.exists) {
-        buffer.unshift({
-          chunk: `import ${identifier}Module from './${type.path.join('/')}';`,
-        });
+        const declaration = check(fs.readFileSync(type.filepath).toString(), camelCase(type.path.join('-')));
+
+        if (declaration) {
+          buffer.unshift({
+            chunk: `import type { ${identifier}Module } from './${type.path.join('/')}/index.d';`,
+          });
+        } else {
+          buffer.unshift({
+            chunk: `import type ${identifier}Module from './${type.path.join('/')}';`,
+          });
+        }
       } else if (definitions.includes(identifier)) {
         buffer.push({
           chunk: `interface ${identifier}Module {}`,

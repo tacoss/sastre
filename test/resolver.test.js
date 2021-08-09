@@ -17,6 +17,7 @@ describe('Resolver', () => {
     const path = require('path');
     const glob = require('glob');
 
+    let readFileCallback;
     let existsCallback;
     let globCallback;
     let loadCallback;
@@ -25,9 +26,11 @@ describe('Resolver', () => {
     beforeEach(() => {
       loadCallback = td.func('Resolver.loadFile');
       useCallback = td.func('Resolver.useFile');
+      readFileCallback = td.func('fs.readFileSync');
       existsCallback = td.func('fs.existsSync');
       globCallback = td.func('glob.sync');
 
+      td.replace(fs, 'readFileSync', readFileCallback);
       td.replace(fs, 'existsSync', existsCallback);
       td.replace(path, 'join', function join() {
         return Array.prototype.slice.call(arguments).join('/');
@@ -139,6 +142,29 @@ describe('Resolver', () => {
         td.when(fs.existsSync('./Test/sub/index.d.ts')).thenReturn(true);
         td.when(fs.existsSync('./Test/sub/nested/index.d.ts')).thenReturn(true);
 
+        td.when(fs.readFileSync('./Example/index.d.ts')).thenReturn(`
+interface Example {
+  y: number;
+}
+declare class Example {
+  constructor(x: number);
+}
+export default Example;
+`);
+        td.when(fs.readFileSync('./Test/sub/index.d.ts')).thenReturn(`
+import type { Stuff } from '../../types';
+export default function callMe(x?: Stuff): number;
+`);
+        td.when(fs.readFileSync('./Test/sub/nested/index.d.ts')).thenReturn(`
+declare const _default: ({ x }: {
+    x: number;
+}) => () => number;
+/**
+OSOM
+*/
+export default _default;
+`);
+
         td.when(Resolver.loadFile('./Name/prop/injectableMethod/index.js')).thenReturn(ctx => () => ctx.undef);
         td.when(Resolver.loadFile('./Name/prop/method/index.js')).thenReturn(function method() {});
         td.when(Resolver.loadFile('./Example/index.js')).thenReturn(class Example {});
@@ -155,9 +181,9 @@ describe('Resolver', () => {
 
         const container = new Resolver('.');
         expect(Resolver.typesOf(container).map(x => (x.type ? [`// ${x.type}`] : []).concat(x.chunk).join('\n')).join('\n')).to.eql(`
-import TestSubNestedModule from './Test/sub/nested';
-import TestSubModule from './Test/sub';
-import ExampleModule from './Example';
+import type { TestSubNestedModule } from './Test/sub/nested/index.d';
+import type TestSubModule from './Test/sub';
+import type ExampleModule from './Example';
 interface TestModule {}
 interface OtherTestWithDashesAndModule {}
 interface NamePropInjectableMethodModule {}

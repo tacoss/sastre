@@ -263,9 +263,20 @@ const buffer = Resolver.typesOf(container).map(x => (x.type ? [`// ${x.type}`] :
 The resulting `buffer` should be something like this:
 
 ```ts
-import TestSubNestedModule from './Test/sub/nested';
-import TestSubModule from './Test/sub';
-import ExampleModule from './Example';
+/**
+
+Comments found in .d.ts files are preserved,
+nested types from methods are extracted as well, e.g.
+
+    ./Test/sub/nested/index.ts
+    export default ({ truth }) => function callMe(): number {
+      return truth;
+    };
+
+*/
+import type { TestSubNestedModule } from './Test/sub/nested/index.d';
+import type TestSubModule from './Test/sub';
+import type ExampleModule from './Example';
 interface TestModule {}
 interface OtherTestWithDashesAndModule {}
 interface NamePropInjectableMethodModule {}
@@ -275,19 +286,19 @@ export interface ExampleInterface extends ExampleModule {}
 // Test
 export interface TestInterface extends TestModule {
   sub: typeof TestSubModule & {
-    nested: typeof TestSubNestedModule
-  }
+    nested: typeof TestSubNestedModule;
+  };
 }
 // OtherTest
 export interface OtherTestInterface {
-  withDashesAnd: typeof OtherTestWithDashesAndModule
+  withDashesAnd: typeof OtherTestWithDashesAndModule;
 }
 // Name
 export interface NameInterface {
   prop: {
-    injectableMethod: typeof NamePropInjectableMethodModule
-    method: typeof NamePropMethodModule
-  }
+    injectableMethod: typeof NamePropInjectableMethodModule;
+    method: typeof NamePropMethodModule;
+  };
 }
 ```
 
