@@ -7,6 +7,9 @@
   "files": [
     "dist/*.js"
   ],
+  "bin": {
+    "sastre": "bin/cli"
+  },
   "scripts": {
     "dev": "npm run test -- -w",
     "mocha": "_mocha --exit --colors --recursive -bR spec",
@@ -31,7 +34,9 @@
   "author": "Alvaro Cabrera <pateketrueke@gmail.com> (https://soypache.co)",
   "license": "MIT",
   "dependencies": {
-    "glob": "^7.1.2"
+    "fs-extra": "^10.0.0",
+    "glob": "^7.1.2",
+    "wargs": "^0.9.3"
   },
   "devDependencies": {
     "bili": "^5.0.5",
@@ -55,7 +60,11 @@
     "set-value": ">=2.0.1",
     "sqlite3": "^4.2.0",
     "testdouble": "^3.8.2",
+    "typescript": "^4.3.5",
     "yargs-parser": ">=13.1.2"
+  },
+  "peerDependencies": {
+    "typescript": "*"
   },
   "_moduleAliases": {
     "@src": "./example/src",

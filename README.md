@@ -302,6 +302,25 @@ export interface NameInterface {
 }
 ```
 
-This way you can write your modules using TypeScript, just make sure you're emitting the definitions in the same place as the generated `.js` files.
+This way you can write your modules using TypeScript, just make sure you're emitting the declarations in the same place as the generated `.js` files.
 
 > Paths are resolved from the `cwd` of the given container, so you must save this file in the same directory to resolve their `import` calls.
+
+The generated declaration should allow you to type-check the containers you built with `sastre`, however they resolve to their composed value
+and not the top-level declaration that could receive dependencies (default export).
+
+In order to access those types you must import them from their full path instead, e.g. `import type TestSubNestedModule from './Test/sub/nested';`
+
+> In the generated code we're using `index.d` to resolve ambiguity between `index.ts` and `index.d.ts` and load from declaration files only.
+
+Use the provided CLI to generate those declarations out of your containers, e.g.
+
+```sh
+sastre example/src/container -r module-alias/register -p controllers -d ../api/controllers --types
+```
+
+The compiler would load any container from its path, if it contains a `typedefs` property it'll be used to write out the `types.d.ts` declaration.
+
+Nested containers can be accessed through the `-p` option, adjust their resolution path with `-d` being relative from the container's path.
+
+Run `sastre` without arguments to show all available options.
