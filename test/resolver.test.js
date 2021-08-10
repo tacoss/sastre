@@ -64,16 +64,6 @@ describe('Resolver', () => {
               foo: Foo,
             },
           });
-
-        td.when(Resolver.scanFiles('extra', decoratorInput))
-          .thenReturn({
-            registry: {
-              bar,
-            },
-            values: {
-              bar: Bar,
-            },
-          });
       });
 
       it('should work as expected', () => {
@@ -87,11 +77,6 @@ describe('Resolver', () => {
 
       it('can use any given callback as after-decorator', () => {
         expect(new Resolver(cwd, () => -1)._decorators.after()).to.eql(-1);
-      });
-
-      it('should scan from multiple directories at once', () => {
-        expect(new Resolver([cwd, 'extra'])._container.registry).to.be.deep.eql({ foo, bar });
-        expect(new Resolver([cwd, 'extra'])._container.values).to.be.deep.eql({ foo: Foo, bar: Bar });
       });
     });
 
@@ -163,6 +148,7 @@ declare const _default: ({ x }: {
 OSOM
 */
 export default _default;
+export const TestSubNestedModule: () => number;
 `);
 
         td.when(Resolver.loadFile('./Name/prop/injectableMethod/index.js')).thenReturn(ctx => () => ctx.undef);
@@ -198,13 +184,13 @@ export interface TestInterface extends TestModule {
 }
 // OtherTest
 export interface OtherTestInterface {
-  withDashesAnd: typeof OtherTestWithDashesAndModule;
+  withDashesAnd: OtherTestWithDashesAndModule;
 }
 // Name
 export interface NameInterface {
   prop: {
-    injectableMethod: typeof NamePropInjectableMethodModule;
-    method: typeof NamePropMethodModule;
+    injectableMethod: NamePropInjectableMethodModule;
+    method: NamePropMethodModule;
   };
 }
 `.trim());

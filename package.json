@@ -5,7 +5,8 @@
   "main": "dist/index.js",
   "module": "dist/index.mjs",
   "files": [
-    "dist/*.js"
+    "dist/*.js",
+    "bin/*"
   ],
   "bin": {
     "sastre": "bin/cli"

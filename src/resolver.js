@@ -58,28 +58,19 @@ export default class Resolver {
       rootContainer = undefined;
     }
 
+    Object.defineProperty(this, '_directory', {
+      enumerable: false,
+      value: directory,
+    });
+
     Object.defineProperty(this, '_decorators', {
       enumerable: false,
       value: getDecorators(hooks, rootContainer),
     });
 
-    // merge multiple sources into a single container instance
-    const handlers = (!Array.isArray(directory) ? [directory]: directory)
-      .reduce((container, cwd) => {
-        if (!container) {
-          container = Resolver.scanFiles(cwd, this._decorators.before);
-        } else {
-          const result = Resolver.scanFiles(cwd, this._decorators.before);
-
-          Object.assign(container.registry, result.registry);
-          Object.assign(container.values, result.values);
-        }
-        return container;
-      }, null);
-
     Object.defineProperty(this, '_container', {
       enumerable: false,
-      value: new Container(rootContainer, handlers),
+      value: new Container(rootContainer, Resolver.scanFiles(directory, this._decorators.before)),
     });
   }
 
@@ -200,7 +191,7 @@ export default class Resolver {
     const groups = { path: [], props: {} };
     const definitions = self._container.types.map(x => camelCase(x.path.join('-')));
 
-    function nest(obj, path) {
+    function nest(obj, path, fallback) {
       const pre = path.map(() => '  ').join('');
 
       let out = '';
@@ -212,12 +203,14 @@ export default class Resolver {
 
         let ok;
         if (definitions.includes(def)) {
-          out += ` typeof ${def}Module`;
+          const prefix = fallback.includes(def) ? '' : 'typeof ';
+
+          out += ` ${prefix}${def}Module`;
           ok = true;
         }
 
         if (Object.keys(obj.props[key].props).length) {
-          out += `${ok ? ' &' : ''} {\n${nest(obj.props[key], path.concat(key))}${pre}};\n`;
+          out += `${ok ? ' &' : ''} {\n${nest(obj.props[key], path.concat(key), fallback)}${pre}};\n`;
         } else {
           out += ';\n';
         }
@@ -229,20 +222,17 @@ export default class Resolver {
       const matches = source.match(/export default (\w+)/);
 
       if (!matches) throw new TypeError(`Missing default export for '${name}Module'`);
-      if (source.includes(`export const ${name}`)) return true;
-      if (!(source.includes(`class ${matches[1]}`)
-        || source.includes(`type ${matches[1]}`)
-        || source.includes(`interface ${matches[1]}`)
-        || source.includes('export default function'))
-      ) return true;
+      if (source.includes(`export const ${name}Module`)) return true;
       return false;
     }
+
+    const fallback = [];
 
     self._container.types.forEach(type => {
       const identifier = camelCase(type.path.join('-'));
 
       if (type.exists) {
-        const declaration = check(fs.readFileSync(type.filepath).toString(), camelCase(type.path.join('-')));
+        const declaration = check(fs.readFileSync(type.filepath).toString(), identifier);
 
         if (declaration) {
           buffer.unshift({
@@ -254,6 +244,7 @@ export default class Resolver {
           });
         }
       } else if (definitions.includes(identifier)) {
+        fallback.push(identifier);
         buffer.push({
           chunk: `interface ${identifier}Module {}`,
         });
@@ -275,7 +266,7 @@ export default class Resolver {
 
       buffer.push({
         type: key,
-        chunk: `export interface ${key}Interface${suffix} {${nest(groups.props[key], [key])}}`,
+        chunk: `export interface ${key}Interface${suffix} {${nest(groups.props[key], [key], fallback)}}`,
       });
     });
 
@@ -288,6 +279,13 @@ export default class Resolver {
 
   get registry() {
     return this._container.registry;
+  }
+
+  get typedefs() {
+    if (!this._typedefs) {
+      this._typedefs = this.typesOf().map(x => x.chunk).join('\n');
+    }
+    return this._typedefs;
   }
 
   typesOf(extend) {

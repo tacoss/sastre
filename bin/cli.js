@@ -2,14 +2,31 @@ const { spawn } = require('child_process');
 const wargs = require('wargs');
 const path = require('path');
 const fs = require('fs-extra');
-const ts = require('typescript');
 
 function camelCase(value) {
   return value.replace(/-([a-z])/g, (_, $1) => $1.toUpperCase());
 }
 
+function toArray(value) {
+  return (!Array.isArray(value) && value ? [value] : value) || [];
+}
+
 function info(message) {
   process.stdout.write(message.replace('\n', '\x1b[K\n'));
+}
+
+function pick(obj, key) {
+  const keys = key.split('.');
+
+  let temp = obj;
+  try {
+    while (keys.length > 0) {
+      temp = temp[keys.shift()];
+    }
+  } catch (e) {
+    throw new Error(`Failed to get '${key}' as container`);
+  }
+  return temp;
 }
 
 function exec(argv) {
@@ -33,10 +50,14 @@ function exec(argv) {
 
 function check(host, argv, options) {
   host.writeFile = (fileName, contents) => {
-    const baseDir = argv._.find(x => fileName.indexOf(x) === 0);
+    const filePath = path.relative('.', fileName);
+    const baseDir = argv._.find(x => filePath.indexOf(x) === 0);
 
-    if (baseDir && fileName.includes('.d.ts')) {
-      const baseName = fileName.substr(baseDir.length + 1).replace('/index.d.ts', '');
+    info(`\r\x1b[36mwrite\x1b[0m ${filePath}\x1b[K`);
+
+    if (argv.flags.watch || argv.flags.verbose) info('\n');
+    if (baseDir && filePath.includes('.d.ts')) {
+      const baseName = filePath.substr(baseDir.length + 1).replace('/index.d.ts', '');
       const name = camelCase(baseName.replace(/\//g, '-'));
       const tmp = contents.replace(/\/\*\*[^]*?\*\/\n/g, '');
       const matches = tmp.match(/export default (\w+)/);
@@ -57,43 +78,63 @@ function check(host, argv, options) {
   return host;
 }
 
-function end(argv) {
-  if (argv.flags.types) {
-    const files = [];
+function build(argv) {
+  if (argv.flags.watch) return;
+  if (!argv.flags.types) return;
 
-    argv._.forEach(use => {
-      const Container = require(path.resolve(use));
-      const container = argv.flags.property ? Container[argv.flags.property] : Container;
-      const directory = argv.flags.directory ? path.resolve(use, argv.flags.directory) : use;
+  const cwd = argv._[0];
+  const entry = require(path.resolve(cwd, argv.flags.import));
+  const input = argv._.slice(1).concat(Object.keys(argv.params));
+  const props = [];
+  const files = [];
 
-      if (!('typedefs' in container)) {
-        throw new TypeError(`Module '${use}' does not have typedefs`);
-      }
+  function push(container, directory) {
+    if (!(container && 'typedefs' in container)) {
+      throw new TypeError(`Module '${path.relative('.', directory)}' does not have typedefs`);
+    }
 
-      if (Array.isArray(container.typedefs)) {
-        container.typedefs.forEach(chunk => {
-          files.push([path.join(directory, chunk.name), chunk.contents]);
-        });
-      } else {
-        files.push([path.join(directory, 'types.d.ts'), container.typedefs]);
-      }
-    });
+    const { typedefs } = container;
 
-    files.forEach(([file, contents]) => {
-      fs.outputFileSync(file, `${contents}\n`);
-      info(`\r\x1b[33mwrite\x1b[0m ${path.relative('.', file)}\n`);
-    });
+    if (Array.isArray(typedefs)) {
+      typedefs.forEach(chunk => {
+        files.push([path.join(directory, chunk.name), chunk.contents]);
+      });
+    } else {
+      files.push([path.join(directory, 'types.d.ts'), typedefs]);
+    }
   }
+
+  if (!input.length) {
+    push(entry, path.resolve(cwd));
+  }
+
+  input.forEach(param => {
+    const isProp = param.charAt() !== ':';
+    const key = !isProp ? param.substr(1): param;
+    const val = argv.params[param] || key;
+
+    const container = pick(entry, key);
+    const directory = path.resolve(cwd, isProp ? '' : val);
+
+    push(container, directory);
+  });
+
+  files.forEach(([file, contents]) => {
+    fs.outputFileSync(file, `${contents}\n`);
+    info(`\r\x1b[36mwrite\x1b[0m ${path.relative('.', file)}\x1b[K\n`);
+  });
+  reportWatchStatusChanged({ messageText: 'Done without issues.\n' });
+  return true;
 }
 
 async function watch(argv) {
+  const ts = require('typescript');
+  const isProd = process.env.NODE_ENV === 'production';
   const configPath = ts.findConfigFile('./', ts.sys.fileExists, 'tsconfig.json');
-  const defaults = { declaration: true };
-
-  if (!configPath && argv.flags.types) {
-    end(argv);
-    return;
-  }
+  const defaults = {
+    declaration: !isProd,
+    skipLibCheck: isProd,
+  };
 
   if (!configPath) throw new Error('Could not find a valid tsconfig.json file');
   if (!argv.flags.watch) {
@@ -118,14 +159,14 @@ async function watch(argv) {
       reportWatchStatusChanged(diagnostic);
     });
 
-    if (!allDiagnostics.length) {
+    let exitCode;
+    if (argv.raw.length) {
+      exitCode = await exec(argv.raw);
+    }
+    if (!allDiagnostics.length && !exitCode) {
       reportWatchStatusChanged({ messageText: 'Done without issues.\n' });
     }
-    if (argv.raw.length) {
-      await exec(argv.raw);
-    }
-    end(argv);
-    process.exit(emitResult.emitSkipped ? 1 : 0);
+    process.exit(exitCode || (emitResult.emitSkipped ? 1 : 0));
   }
 
   const createProgram = ts.createEmitAndSemanticDiagnosticsBuilderProgram;
@@ -143,7 +184,6 @@ async function watch(argv) {
     if (argv.raw.length) {
       await exec(argv.raw);
     }
-    end(argv);
   };
 
   ts.createWatchProgram(check(host, argv));
@@ -172,43 +212,42 @@ function reportWatchStatusChanged(diagnostic) {
 }
 
 const argv = wargs(process.argv.slice(2), {
-  boolean: 'whVT',
-  string: 'rpd',
+  boolean: 'twhV',
+  string: 'ri',
   alias: {
-    d: 'directory',
-    p: 'property',
-    r: 'require',
     V: 'verbose',
-    T: 'types',
+    r: 'require',
+    i: 'import',
+    t: 'types',
     w: 'watch',
     h: 'help',
   },
 });
 
 const USAGE_INFO = `
-Compiles sources using existing tsconfig.json and any available typescript installation:
+Compiles sources using existing tsconfig.json and any available typescript installation.
 
-1. \`tsc\` options from the CLI are not supported, only those defined in the tsconfig.json file.
-
-2. \`.d.ts\` files that matches any given PATH are augmented with an additional type extracted
-   from the original declaration, this should be enough to describe all our injected functions.
-
-3. invoke \`Resolver.typesOf()\` to get the top-level types from your containers,
-   save them somewhere accessible to your scripts.
+When --types are enabled, instead, generates type declarations from given containers.
 
 Usage:
-  sastre [PATH...] [OPTIONS] -- [CMD...]
+  sastre [PATH] [OPTIONS] [TYPEDEFS...] -- [CMD...]
 
 Options:
-  -V, --verbose    # Print error.stack on failures
-  -T, --types      # Export types from given paths
-  -w, --watch      # Enable watch mode of sources
-  -r, --require    # Preloads a NodeJS script
-  -p, --property   # Use custom container
-  -d, --directory  # Use given directory
+  -V, --verbose   Enable more detailed logs
+  -r, --require   Preloads a NodeJS script
+  -i, --import    Module from relative path
+  -t, --types     Enable typedefs generation
+  -w, --watch     Enable watch mode of sources
 
-Example:
-  sastre path/to/container -p controllers -d ../api/controllers -- date
+TypeDefs:
+  prop        Set prop as container, use PATH as directory
+  prop:path   Set prop as container, use relative PATH as directory
+  :prop       Shortcut for prop:prop, use its named PATH as directory
+
+Examples:
+  sastre example/src/api -ti ../container :controllers :models -r module-alias/register
+  sastre tests/fixtures/models -ti ../main nested.models -- date
+  sastre src/containers -t api:models
 `;
 
 if (!argv._.length || argv.flags.help) {
@@ -217,15 +256,16 @@ if (!argv._.length || argv.flags.help) {
 }
 
 if (argv.flags.require) {
-  const mod = argv.flags.require.charAt() === '.'
-    ? path.resolve(argv.flags.require)
-    : require.resolve(argv.flags.require);
-
-  require(mod);
+  toArray(argv.flags.require).forEach(mod => {
+    require(mod.charAt() === '.' ? path.resolve(mod) : require.resolve(mod));
+  });
 }
 
-watch(argv).catch(e => {
-  info(`\r\x1b[31m${e.message}\x1b[0m\n`);
-  if (argv.flags.verbose) info(`${e.stack.replace(e.message, '').trim()}\n`);
-  process.exit(1);
-});
+Promise.resolve()
+  .then(() => build(argv))
+  .then(skip => !skip && watch(argv))
+  .catch(e => {
+    info(`\r\x1b[31m${e.message}\x1b[0m\n`);
+    if (argv.flags.verbose) info(`${e.stack.replace(e.message, '').trim()}\n`);
+    process.exit(1);
+  });
