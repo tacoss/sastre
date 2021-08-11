@@ -263,64 +263,75 @@ const buffer = Resolver.typesOf(container).map(x => (x.type ? [`// ${x.type}`] :
 The resulting `buffer` should be something like this:
 
 ```ts
-/**
-
-Comments found in .d.ts files are preserved,
-nested types from methods are extracted as well, e.g.
-
-    ./Test/sub/nested/index.ts
-    export default ({ truth }) => function callMe(): number {
-      return truth;
-    };
-
-*/
-import type { TestSubNestedModule } from './Test/sub/nested/index.d';
-import type TestSubModule from './Test/sub';
+import type { nested as TestSubNestedModule } from './Test/sub/nested';
+import type { method as NamePropMethodModule } from './Name/prop/method';
+import type { injectableMethod as NamePropInjectableMethodModule } from './Name/prop/injectableMethod';
+import type { withDashesAnd as OtherTestWithDashesAndModule } from './OtherTest/with-dashes-and';
+import type { sub as TestSubModule } from './Test/sub';
+import type TestModule from './Test';
 import type ExampleModule from './Example';
-interface TestModule {}
-interface OtherTestWithDashesAndModule {}
-interface NamePropInjectableMethodModule {}
-interface NamePropMethodModule {}
 // Example
 export interface ExampleInterface extends ExampleModule {}
+declare namespace Example {}
 // Test
 export interface TestInterface extends TestModule {
-  sub: typeof TestSubModule & {
+  sub: Test.Sub;
+}
+declare namespace Test {
+  export interface Sub extends TestSubModule {
     nested: typeof TestSubNestedModule;
-  };
+  }
 }
 // OtherTest
 export interface OtherTestInterface {
-  withDashesAnd: typeof OtherTestWithDashesAndModule;
+  withDashesAnd: OtherTest.WithDashesAnd;
+}
+declare namespace OtherTest {
+  export interface WithDashesAnd extends OtherTestWithDashesAndModule {}
 }
 // Name
 export interface NameInterface {
-  prop: {
+  prop: Name.Prop;
+}
+declare namespace Name {
+  export interface Prop {
     injectableMethod: typeof NamePropInjectableMethodModule;
     method: typeof NamePropMethodModule;
-  };
+  }
 }
 ```
-
-This way you can write your modules using TypeScript, just make sure you're emitting the declarations in the same place as the generated `.js` files.
-
-> Paths are resolved from the `cwd` of the given container, so you must save this file in the same directory to resolve their `import` calls.
-
-The generated declaration should allow you to type-check the containers you built with `sastre`, however they resolve to their composed value
-and not the top-level declaration that could receive dependencies (default export).
-
-In order to access those types you must import them from their full path instead, e.g. `import type TestSubNestedModule from './Test/sub/nested';`
-
-> In the generated code we're using `index.d` to resolve ambiguity between `index.ts` and `index.d.ts` and load from declaration files only.
 
 Use the provided CLI to generate those declarations out of your containers, e.g.
 
 ```sh
-sastre example/src/container -r module-alias/register -p controllers -d ../api/controllers --types
+sastre example/src/api -ti ../container :controllers :models -r module-alias/register
 ```
 
-The compiler would load any container from its path, if it contains a `typedefs` property it'll be used to write out the `types.d.ts` declaration.
+> Run `sastre` without arguments to show all available options.
 
-Nested containers can be accessed through the `-p` option, adjust their resolution path with `-d` being relative from the container's path.
+The compiler would load any container from its path, if it contains a `typedefs` property it'll be used to write out the `index.d.ts` declaration.
 
-Run `sastre` without arguments to show all available options.
+Imported types are guessed from their directory names, e.g. `./Path/to/fn/index.js` will result in a `import { fn as PathToFnModule } from './Path/to/fn';` snippet.
+
+Such modules should export their types to make TypeScript happy:
+
+```ts
+export type { fn };
+
+export default function fn(): void {
+  console.log('OSOM');
+}
+```
+
+If you're injecting values through a `provider.js` file, your signature may look like this:
+
+```ts
+import type DI from '../../../provider';
+
+declare function fn(x?: number): string;
+export type { fn };
+
+export default ({ dep }: DI): typeof fn => function fn() {
+  return dep.value;
+}
+```

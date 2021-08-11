@@ -17,7 +17,6 @@ describe('Resolver', () => {
     const path = require('path');
     const glob = require('glob');
 
-    let readFileCallback;
     let existsCallback;
     let globCallback;
     let loadCallback;
@@ -26,11 +25,9 @@ describe('Resolver', () => {
     beforeEach(() => {
       loadCallback = td.func('Resolver.loadFile');
       useCallback = td.func('Resolver.useFile');
-      readFileCallback = td.func('fs.readFileSync');
       existsCallback = td.func('fs.existsSync');
       globCallback = td.func('glob.sync');
 
-      td.replace(fs, 'readFileSync', readFileCallback);
       td.replace(fs, 'existsSync', existsCallback);
       td.replace(path, 'join', function join() {
         return Array.prototype.slice.call(arguments).join('/');
@@ -123,34 +120,6 @@ describe('Resolver', () => {
         td.replace(Resolver, 'useFile', useCallback);
         td.replace(Resolver, 'loadFile', loadCallback);
 
-        td.when(fs.existsSync('./Example/index.d.ts')).thenReturn(true);
-        td.when(fs.existsSync('./Test/sub/index.d.ts')).thenReturn(true);
-        td.when(fs.existsSync('./Test/sub/nested/index.d.ts')).thenReturn(true);
-
-        td.when(fs.readFileSync('./Example/index.d.ts')).thenReturn(`
-interface Example {
-  y: number;
-}
-declare class Example {
-  constructor(x: number);
-}
-export default Example;
-`);
-        td.when(fs.readFileSync('./Test/sub/index.d.ts')).thenReturn(`
-import type { Stuff } from '../../types';
-export default function callMe(x?: Stuff): number;
-`);
-        td.when(fs.readFileSync('./Test/sub/nested/index.d.ts')).thenReturn(`
-declare const _default: ({ x }: {
-    x: number;
-}) => () => number;
-/**
-OSOM
-*/
-export default _default;
-export const TestSubNestedModule: () => number;
-`);
-
         td.when(Resolver.loadFile('./Name/prop/injectableMethod/index.js')).thenReturn(ctx => () => ctx.undef);
         td.when(Resolver.loadFile('./Name/prop/method/index.js')).thenReturn(function method() {});
         td.when(Resolver.loadFile('./Example/index.js')).thenReturn(class Example {});
@@ -166,32 +135,42 @@ export const TestSubNestedModule: () => number;
           });
 
         const container = new Resolver('.');
-        expect(Resolver.typesOf(container).map(x => (x.type ? [`// ${x.type}`] : []).concat(x.chunk).join('\n')).join('\n')).to.eql(`
-import type { TestSubNestedModule } from './Test/sub/nested/index.d';
-import type TestSubModule from './Test/sub';
+        expect(Resolver.typesOf(container, null, null, true).map(x => (x.type ? [`// ${x.type}`] : []).concat(x.chunk).join('\n')).join('\n')).to.eql(`
+import type { nested as TestSubNestedModule } from './Test/sub/nested';
+import type { method as NamePropMethodModule } from './Name/prop/method';
+import type { injectableMethod as NamePropInjectableMethodModule } from './Name/prop/injectableMethod';
+import type { withDashesAnd as OtherTestWithDashesAndModule } from './OtherTest/with-dashes-and';
+import type { sub as TestSubModule } from './Test/sub';
+import type TestModule from './Test';
 import type ExampleModule from './Example';
-interface TestModule {}
-interface OtherTestWithDashesAndModule {}
-interface NamePropInjectableMethodModule {}
-interface NamePropMethodModule {}
 // Example
 export interface ExampleInterface extends ExampleModule {}
+declare namespace Example {}
 // Test
 export interface TestInterface extends TestModule {
-  sub: typeof TestSubModule & {
+  sub: Test.Sub;
+}
+declare namespace Test {
+  export interface Sub extends TestSubModule {
     nested: typeof TestSubNestedModule;
-  };
+  }
 }
 // OtherTest
 export interface OtherTestInterface {
-  withDashesAnd: OtherTestWithDashesAndModule;
+  withDashesAnd: OtherTest.WithDashesAnd;
+}
+declare namespace OtherTest {
+  export interface WithDashesAnd extends OtherTestWithDashesAndModule {}
 }
 // Name
 export interface NameInterface {
-  prop: {
-    injectableMethod: NamePropInjectableMethodModule;
-    method: NamePropMethodModule;
-  };
+  prop: Name.Prop;
+}
+declare namespace Name {
+  export interface Prop {
+    injectableMethod: typeof NamePropInjectableMethodModule;
+    method: typeof NamePropMethodModule;
+  }
 }
 `.trim());
 

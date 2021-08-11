@@ -120,12 +120,9 @@ export default class Resolver {
         throw new Exception(`Unexpected provider file, given ${providerFile}`);
       }
 
-      const tsFile = definitionFile.replace('.js', '.d.ts');
-
       resolverInfo.types.push({
         path: [value].concat(properties.slice()),
-        exists: fs.existsSync(tsFile),
-        filepath: tsFile,
+        injectable: isInjectable,
       });
 
       if (!resolverInfo.keys.includes(value)) resolverInfo.keys.push(value);
@@ -186,67 +183,61 @@ export default class Resolver {
     return dependencies;
   }
 
-  static typesOf(self, extend) {
+  static typesOf(self, extend, properties, references) {
     const buffer = [];
     const groups = { path: [], props: {} };
     const definitions = self._container.types.map(x => camelCase(x.path.join('-')));
 
-    function nest(obj, path, fallback) {
+    function nest(obj, path, typedefs, _interface) {
       const pre = path.map(() => '  ').join('');
 
       let out = '';
       Object.keys(obj.props).forEach(key => {
         out += !out && path.length === 1 ? '\n' : '';
-        out += `${pre}${camelCase(key)}:`;
+        out += _interface ? `${pre}export interface ${ucFirst(camelCase(key))}` : `${pre}${camelCase(key)}:`;
 
         const def = camelCase(path.concat(key).join('-'));
+        const props = Object.keys(obj.props[key].props).length;
 
         let ok;
         if (definitions.includes(def)) {
-          const prefix = fallback.includes(def) ? '' : 'typeof ';
-
-          out += ` ${prefix}${def}Module`;
+          out += _interface ? ' extends' : '';
+          out += ` ${_interface ? '' : 'typeof '}${def}Module`;
           ok = true;
         }
 
-        if (Object.keys(obj.props[key].props).length) {
-          out += `${ok ? ' &' : ''} {\n${nest(obj.props[key], path.concat(key), fallback)}${pre}};\n`;
+        if (props) {
+          out += `${ok && !_interface ? ' &' : ''} {\n${nest(obj.props[key], path.concat(key), typedefs)}${pre}}`;
+          out += _interface ? '\n' : ';\n';
         } else {
-          out += ';\n';
+          out += _interface ? ' {}\n' : ';\n';
         }
       });
       return out;
     }
 
-    function check(source, name) {
-      const matches = source.match(/export default (\w+)/);
-
-      if (!matches) throw new TypeError(`Missing default export for '${name}Module'`);
-      if (source.includes(`export const ${name}Module`)) return true;
-      return false;
-    }
-
-    const fallback = [];
+    const typedefs = [];
 
     self._container.types.forEach(type => {
       const identifier = camelCase(type.path.join('-'));
 
-      if (type.exists) {
-        const declaration = check(fs.readFileSync(type.filepath).toString(), identifier);
+      if (definitions.includes(identifier)) {
+        typedefs.push(identifier);
+      }
 
-        if (declaration) {
-          buffer.unshift({
-            chunk: `import type { ${identifier}Module } from './${type.path.join('/')}/index.d';`,
-          });
-        } else {
-          buffer.unshift({
-            chunk: `import type ${identifier}Module from './${type.path.join('/')}';`,
-          });
-        }
-      } else if (definitions.includes(identifier)) {
-        fallback.push(identifier);
-        buffer.push({
-          chunk: `interface ${identifier}Module {}`,
+      if (type.injectable && type.path.length > 1) {
+        buffer.unshift({
+          chunk: `import type { ${camelCase(type.path[type.path.length - 1])} as ${identifier}Module } from './${type.path.join('/')}';`,
+        });
+      } else if (typeof references === 'function') {
+        buffer.unshift({
+          chunk: references(identifier, type),
+        });
+      } else {
+        buffer.unshift({
+          chunk: references
+            ? `import type ${identifier}Module from './${type.path.join('/')}';`
+            : `interface ${identifier}Module {}`,
         });
       }
 
@@ -263,10 +254,29 @@ export default class Resolver {
     Object.keys(groups.props).forEach(key => {
       const exts = (definitions.includes(key) ? [`${key}Module`] : []).concat(extend ? [extend] : []);
       const suffix = exts.length > 0 ? ` extends ${exts.join(', ')}` : '';
+      const props = [];
+
+      if (properties) {
+        properties.forEach(prop => {
+          if (!(prop in groups.props[key].props)) groups.props[key].props[prop] = { props: {} };
+        });
+      }
+
+      const keys = Object.keys(groups.props[key].props);
+
+      keys.forEach(prop => {
+        if (keys.length > 0) {
+          props.push(`  ${camelCase(prop)}: ${key}.${ucFirst(camelCase(prop))};\n`);
+        } else {
+          props.push(`  ${camelCase(prop)}: ${typedefs.includes(key)}${key}\n`);
+        }
+      });
 
       buffer.push({
         type: key,
-        chunk: `export interface ${key}Interface${suffix} {${nest(groups.props[key], [key], fallback)}}`,
+        chunk: `export interface ${key}Interface${suffix} {${props.length > 0 ? `\n${props.join('')}` : ''}}`,
+      }, {
+        chunk: `declare namespace ${key} {${nest(groups.props[key], [key], typedefs, true)}}`,
       });
     });
 
@@ -288,8 +298,8 @@ export default class Resolver {
     return this._typedefs;
   }
 
-  typesOf(extend) {
-    return Resolver.typesOf(this, extend);
+  typesOf(extend, properties, references) {
+    return Resolver.typesOf(this, extend, properties, references);
   }
 
   forEach(callback) {

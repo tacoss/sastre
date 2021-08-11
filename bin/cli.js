@@ -51,29 +51,11 @@ function exec(argv) {
 function check(host, argv, options) {
   host.writeFile = (fileName, contents) => {
     const filePath = path.relative('.', fileName);
-    const baseDir = argv._.find(x => filePath.indexOf(x) === 0);
 
     info(`\r\x1b[36mwrite\x1b[0m ${filePath}\x1b[K`);
 
     if (argv.flags.watch || argv.flags.verbose) info('\n');
-    if (baseDir && filePath.includes('.d.ts')) {
-      const baseName = filePath.substr(baseDir.length + 1).replace('/index.d.ts', '');
-      const name = camelCase(baseName.replace(/\//g, '-'));
-      const tmp = contents.replace(/\/\*\*[^]*?\*\/\n/g, '');
-      const matches = tmp.match(/export default (\w+)/);
-
-      if (!matches) throw new TypeError(`Missing default export for '${name}Module'`);
-
-      const declaration = tmp.match(new RegExp(`declare const ${matches[1]}[^]*?=>([^]*?);`));
-
-      if (!declaration) {
-        fs.outputFileSync(fileName, contents);
-      } else {
-        fs.outputFileSync(fileName, `${contents}export const ${name}Module:${declaration[1]};\n`);
-      }
-    } else {
-      fs.outputFileSync(fileName, contents);
-    }
+    fs.outputFileSync(fileName, contents);
   };
   return host;
 }
@@ -100,7 +82,7 @@ function build(argv) {
         files.push([path.join(directory, chunk.name), chunk.contents]);
       });
     } else {
-      files.push([path.join(directory, 'types.d.ts'), typedefs]);
+      files.push([path.join(directory, 'index.d.ts'), typedefs]);
     }
   }
 
@@ -127,12 +109,13 @@ function build(argv) {
   return true;
 }
 
+let ts;
 async function watch(argv) {
-  const ts = require('typescript');
+  ts = require('typescript');
+
   const isProd = process.env.NODE_ENV === 'production';
   const configPath = ts.findConfigFile('./', ts.sys.fileExists, 'tsconfig.json');
   const defaults = {
-    declaration: !isProd,
     skipLibCheck: isProd,
   };
 
@@ -149,6 +132,13 @@ async function watch(argv) {
     const parsedConfig = ts.parseJsonConfigFileContent(options, ts.sys, basePath);
 
     reportWatchStatusChanged({ messageText: 'Starting compilation...' });
+
+    if (parsedConfig.errors.length > 0) {
+      parsedConfig.errors.forEach(err => {
+        reportDiagnostic(err);
+      });
+      process.exit(1);
+    }
 
     const host = ts.createCompilerHost(parsedConfig.options);
     const program = ts.createProgram(parsedConfig.fileNames, parsedConfig.options, check(host, argv, options));
@@ -191,7 +181,7 @@ async function watch(argv) {
 
 function reportDiagnostic(diagnostic) {
   if (!diagnostic.file) {
-    info(`\r\x1b[33mTS${diagnostic.code}\x1b[0m ${ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')}\n`);
+    info(`\r\x1b[33m⚠ TS${diagnostic.code}\x1b[0m ${ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n')}\n`);
     return;
   }
 
@@ -208,7 +198,7 @@ function reportWatchStatusChanged(diagnostic) {
   const { line, character } = ts.getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start);
   const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
 
-  info(`\r\x1b[2m${diagnostic.file.fileName}:${line + 1}:${character + 1}\x1b[0m\n\x1b[33mTS${diagnostic.code}\x1b[0m ${message}\n`);
+  info(`\r\x1b[2m${diagnostic.file.fileName}:${line + 1}:${character + 1}\x1b[0m\n\x1b[33m⚠ TS${diagnostic.code}\x1b[0m ${message}\n`);
 }
 
 const argv = wargs(process.argv.slice(2), {
