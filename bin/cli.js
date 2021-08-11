@@ -3,10 +3,6 @@ const wargs = require('wargs');
 const path = require('path');
 const fs = require('fs-extra');
 
-function camelCase(value) {
-  return value.replace(/-([a-z])/g, (_, $1) => $1.toUpperCase());
-}
-
 function toArray(value) {
   return (!Array.isArray(value) && value ? [value] : value) || [];
 }
@@ -48,7 +44,7 @@ function exec(argv) {
   });
 }
 
-function check(host, argv, options) {
+function check(host, argv) {
   host.writeFile = (fileName, contents) => {
     const filePath = path.relative('.', fileName);
 
@@ -141,7 +137,7 @@ async function watch(argv) {
     }
 
     const host = ts.createCompilerHost(parsedConfig.options);
-    const program = ts.createProgram(parsedConfig.fileNames, parsedConfig.options, check(host, argv, options));
+    const program = ts.createProgram(parsedConfig.fileNames, parsedConfig.options, check(host, argv));
     const emitResult = program.emit();
     const allDiagnostics = ts.getPreEmitDiagnostics(program).concat(emitResult.diagnostics);
 
