@@ -3,7 +3,6 @@
   "version": "0.2.14",
   "description": "Module confection at its finest.",
   "main": "dist/index.js",
-  "module": "dist/index.mjs",
   "files": [
     "dist/*.js",
     "bin/*"
@@ -14,7 +13,7 @@
   "scripts": {
     "dev": "npm run test -- -w",
     "mocha": "_mocha --exit --colors --recursive -bR spec",
-    "build": "bili src/index.js --minimal --format es --format cjs",
+    "build": "esbuild --bundle src/index.js --outdir=dist --platform=node --external:fs --external:glob --external:path --external:util",
     "node": "node -r module-alias/register --",
     "start": "npm run node -- example",
     "test": "npm run test:unit --",
@@ -40,10 +39,10 @@
     "wargs": "^0.9.3"
   },
   "devDependencies": {
-    "bili": "^5.0.5",
     "chai": "^4.1.2",
     "codecov": "^3.0.2",
     "dot-prop": ">=4.2.1",
+    "esbuild": "^0.12.19",
     "esm": ">=3.1.0",
     "extend": ">=3.0.2",
     "is-svg": ">=4.2.2",
