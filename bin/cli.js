@@ -167,12 +167,18 @@ async function watch(argv) {
     return origCreateProgram(rootNames, options, host, oldProgram);
   };
 
+  let _ready;
   const origPostProgramCreate = host.afterProgramCreate;
   host.afterProgramCreate = async program => {
     origPostProgramCreate(program);
 
     if (argv.raw.length) {
-      await exec(argv.raw);
+      if (!argv.flags.detach) {
+        await exec(argv.raw);
+      } else if (!_ready) {
+        exec(argv.raw);
+        _ready = true;
+      }
     }
   };
 
@@ -202,12 +208,13 @@ function reportWatchStatusChanged(diagnostic) {
 }
 
 const argv = wargs(process.argv.slice(2), {
-  boolean: 'btwhV',
+  boolean: 'dbtwhV',
   string: 'ri',
   alias: {
     V: 'verbose',
     r: 'require',
     i: 'import',
+    d: 'detach',
     t: 'types',
     w: 'watch',
     b: 'bail',
@@ -227,6 +234,7 @@ Options:
   -V, --verbose   Enable more detailed logs
   -r, --require   Preloads a NodeJS script
   -i, --import    Module from relative path
+  -d, --detach    Run CMD after watch once
   -t, --types     Enable typedefs generation
   -w, --watch     Enable watch mode of sources
   -b, --bail      Exits from build on any failure
