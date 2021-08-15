@@ -1,3 +1,5 @@
+require('global-or-local').devDependencies(['typescript']);
+
 const { spawn } = require('child_process');
 const wargs = require('wargs');
 const path = require('path');
@@ -151,6 +153,8 @@ async function watch(argv) {
     }
     if (!allDiagnostics.length && !exitCode) {
       reportWatchStatusChanged({ messageText: 'Done without issues.\n' });
+    } else if (argv.flags.bail) {
+      exitCode = 1;
     }
     process.exit(exitCode || (emitResult.emitSkipped ? 1 : 0));
   }
@@ -198,7 +202,7 @@ function reportWatchStatusChanged(diagnostic) {
 }
 
 const argv = wargs(process.argv.slice(2), {
-  boolean: 'twhV',
+  boolean: 'btwhV',
   string: 'ri',
   alias: {
     V: 'verbose',
@@ -206,6 +210,7 @@ const argv = wargs(process.argv.slice(2), {
     i: 'import',
     t: 'types',
     w: 'watch',
+    b: 'bail',
     h: 'help',
   },
 });
@@ -224,6 +229,7 @@ Options:
   -i, --import    Module from relative path
   -t, --types     Enable typedefs generation
   -w, --watch     Enable watch mode of sources
+  -b, --bail      Exits from build on any failure
 
 TypeDefs:
   prop        Set prop as container, use PATH as directory
@@ -236,7 +242,7 @@ Examples:
   sastre src/containers -t api:models
 `;
 
-if (!argv._.length || argv.flags.help) {
+if (argv.flags.help) {
   console.log(USAGE_INFO);
   process.exit(1);
 }
