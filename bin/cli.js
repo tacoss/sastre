@@ -47,6 +47,7 @@ function exec(argv) {
 }
 
 function check(host, argv) {
+  host.changes = [];
   host.writeFile = (fileName, contents) => {
     const filePath = path.relative('.', fileName);
 
@@ -54,6 +55,7 @@ function check(host, argv) {
 
     if (argv.flags.watch || argv.flags.verbose) info('\n');
     fs.outputFileSync(fileName, contents);
+    host.changes.push(filePath);
   };
   return host;
 }
@@ -103,7 +105,7 @@ function build(argv) {
     fs.outputFileSync(file, `${contents}\n`);
     info(`\r\x1b[36mwrite\x1b[0m ${path.relative('.', file)}\x1b[K\n`);
   });
-  reportWatchStatusChanged({ messageText: 'Done without issues.\n' });
+  reportWatchStatusChanged({ messageText: 'without issues\n' });
   return true;
 }
 
@@ -129,7 +131,7 @@ async function watch(argv) {
     const basePath = path.dirname(configPath);
     const parsedConfig = ts.parseJsonConfigFileContent(options, ts.sys, basePath);
 
-    reportWatchStatusChanged({ messageText: 'Starting compilation...' });
+    reportWatchStatusChanged({ messageText: 'starting compilation...' });
 
     if (parsedConfig.errors.length > 0) {
       parsedConfig.errors.forEach(err => {
@@ -147,12 +149,16 @@ async function watch(argv) {
       reportWatchStatusChanged(diagnostic);
     });
 
+    if (!(argv.flags.watch || argv.flags.verbose)) {
+      info(`\r${host.changes.length} file${host.changes.length === 1 ? '' : 's'} written\n`);
+    }
+
     let exitCode;
     if (argv.raw.length) {
       exitCode = await exec(argv.raw);
     }
     if (!allDiagnostics.length && !exitCode) {
-      reportWatchStatusChanged({ messageText: 'Done without issues.\n' });
+      reportWatchStatusChanged({ messageText: 'without issues\n' });
     } else if (argv.flags.bail) {
       exitCode = 1;
     }
