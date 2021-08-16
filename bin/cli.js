@@ -98,14 +98,14 @@ function build(argv) {
     const container = pick(entry, key);
     const directory = path.resolve(cwd, isProp ? '' : val);
 
-    push(container, directory);
+    push(container, param in argv.params ? path.join(directory, val) : directory);
   });
 
   files.forEach(([file, contents]) => {
     fs.outputFileSync(file, `${contents}\n`);
     info(`\r\x1b[36mwrite\x1b[0m ${path.relative('.', file)}\x1b[K\n`);
   });
-  reportWatchStatusChanged({ messageText: 'without issues\n' });
+  reportWatchStatusChanged({ messageText: 'Done without issues.\n' });
   return true;
 }
 
@@ -131,7 +131,7 @@ async function watch(argv) {
     const basePath = path.dirname(configPath);
     const parsedConfig = ts.parseJsonConfigFileContent(options, ts.sys, basePath);
 
-    reportWatchStatusChanged({ messageText: 'starting compilation...' });
+    reportWatchStatusChanged({ messageText: 'Starting typescript compilation...' });
 
     if (parsedConfig.errors.length > 0) {
       parsedConfig.errors.forEach(err => {
@@ -158,7 +158,7 @@ async function watch(argv) {
       exitCode = await exec(argv.raw);
     }
     if (!allDiagnostics.length && !exitCode) {
-      reportWatchStatusChanged({ messageText: 'without issues\n' });
+      reportWatchStatusChanged({ messageText: 'Done without issues.\n' });
     } else if (argv.flags.bail) {
       exitCode = 1;
     }
