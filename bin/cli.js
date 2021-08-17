@@ -177,6 +177,8 @@ async function watch(argv) {
 
   const origCreateProgram = host.createProgram;
   host.createProgram = (rootNames, options, host, oldProgram) => {
+    process.stdout.write('\x1Bc');
+
     return origCreateProgram(rootNames, options, host, oldProgram);
   };
 
