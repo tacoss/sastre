@@ -121,6 +121,9 @@ async function watch(argv) {
   const defaults = {
     incremental: !isProd,
     skipLibCheck: isProd,
+    target: 'ES2021',
+    module: 'commonjs',
+    esModuleInterop: true,
   };
 
   if (!configPath) throw new Error('Could not find a valid tsconfig.json file');
