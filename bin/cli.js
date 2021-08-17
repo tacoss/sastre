@@ -135,6 +135,8 @@ async function watch(argv) {
       ...options.compilerOptions,
     };
 
+    delete options.compilerOptions.incremental;
+
     const basePath = path.dirname(configPath);
     const parsedConfig = ts.parseJsonConfigFileContent(options, ts.sys, basePath);
 
