@@ -119,6 +119,7 @@ async function watch(argv) {
   const isProd = process.env.NODE_ENV === 'production';
   const configPath = ts.findConfigFile('./', ts.sys.fileExists, 'tsconfig.json');
   const defaults = {
+    incremental: !isProd,
     skipLibCheck: isProd,
   };
 
