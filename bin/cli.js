@@ -51,9 +51,12 @@ function check(host, argv) {
   host.writeFile = (fileName, contents) => {
     const filePath = path.relative('.', fileName);
 
-    info(`\r\x1b[36mwrite\x1b[0m ${filePath}\x1b[K`);
+    if (!filePath.includes('tsconfig.tsbuildinfo')) {
+      info(`\r\x1b[36mwrite\x1b[0m ${filePath}\x1b[K`);
 
-    if (argv.flags.watch || argv.flags.verbose) info('\n');
+      if (argv.flags.watch || argv.flags.verbose) info('\n');
+    }
+
     fs.outputFileSync(fileName, contents);
     host.changes.push(filePath);
   };
