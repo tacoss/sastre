@@ -123,6 +123,7 @@ async function watch(argv) {
     skipLibCheck: isProd,
     target: 'ES2021',
     module: 'commonjs',
+    inlineSourceMap: true,
     esModuleInterop: true,
     isolatedModules: true,
     forceConsistentCasingInFileNames: true,
@@ -181,7 +182,9 @@ async function watch(argv) {
 
   const origCreateProgram = host.createProgram;
   host.createProgram = (rootNames, options, host, oldProgram) => {
-    process.stdout.write('\x1Bc');
+    if (argv.flags.clear) {
+      process.stdout.write('\x1Bc');
+    }
 
     return origCreateProgram(rootNames, options, host, oldProgram);
   };
@@ -227,7 +230,7 @@ function reportWatchStatusChanged(diagnostic) {
 }
 
 const argv = wargs(process.argv.slice(2), {
-  boolean: 'dbtwhV',
+  boolean: 'cdbtwhV',
   string: 'ri',
   alias: {
     V: 'verbose',
@@ -236,6 +239,7 @@ const argv = wargs(process.argv.slice(2), {
     d: 'detach',
     t: 'types',
     w: 'watch',
+    c: 'clear',
     b: 'bail',
     h: 'help',
   },
@@ -256,6 +260,7 @@ Options:
   -d, --detach    Run CMD after watch once
   -t, --types     Enable typedefs generation
   -w, --watch     Enable watch mode of sources
+  -c, --clear     Clear screen between changes
   -b, --bail      Exits from build on any failure
 
 TypeDefs:
