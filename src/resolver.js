@@ -193,24 +193,30 @@ export default class Resolver {
 
       let out = '';
       Object.keys(obj.props).forEach(key => {
-        out += !out && path.length === 1 ? '\n' : '';
-        out += _interface ? `${pre}export interface ${ucFirst(camelCase(key))}` : `${pre}${camelCase(key)}:`;
-
         const def = camelCase(path.concat(key).join('-'));
         const props = Object.keys(obj.props[key].props).length;
+        const defined = definitions.includes(def);
 
-        let ok;
-        if (definitions.includes(def)) {
-          out += _interface ? ' extends' : '';
-          out += ` ${_interface ? '' : 'typeof '}${def}Module`;
-          ok = true;
-        }
+        out += !out && path.length === 1 ? '\n' : '';
 
-        if (props) {
-          out += `${ok && !_interface ? ' &' : ''} {\n${nest(obj.props[key], path.concat(key), typedefs)}${pre}}`;
-          out += _interface ? '\n' : ';\n';
+        if (_interface && defined && !props) {
+          out += `${pre}export type ${ucFirst(camelCase(key))} = typeof ${def}Module;\n`;
         } else {
-          out += _interface ? ' {}\n' : ';\n';
+          out += _interface ? `${pre}export interface ${ucFirst(camelCase(key))}` : `${pre}${camelCase(key)}:`;
+
+          let ok;
+          if (defined) {
+            out += _interface ? ' extends' : '';
+            out += ` ${_interface ? '' : 'typeof '}${def}Module`;
+            ok = true;
+          }
+
+          if (props) {
+            out += `${ok && !_interface ? ' &' : ''} {\n${nest(obj.props[key], path.concat(key), typedefs)}${pre}}`;
+            out += _interface ? '\n' : ';\n';
+          } else {
+            out += _interface ? ' {}\n' : ';\n';
+          }
         }
       });
       return out;
@@ -267,8 +273,6 @@ export default class Resolver {
       keys.forEach(prop => {
         if (keys.length > 0) {
           props.push(`  ${camelCase(prop)}: ${key}.${ucFirst(camelCase(prop))};\n`);
-        } else {
-          props.push(`  ${camelCase(prop)}: ${typedefs.includes(key)}${key}\n`);
         }
       });
 
