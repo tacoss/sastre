@@ -124,6 +124,8 @@ async function watch(argv) {
     target: 'ES2021',
     module: 'commonjs',
     esModuleInterop: true,
+    isolatedModules: true,
+    forceConsistentCasingInFileNames: true,
   };
 
   if (!configPath) throw new Error('Could not find a valid tsconfig.json file');
