@@ -43,7 +43,7 @@ function assignProps(target) {
 }
 
 function camelCase(value) {
-  return value.replace(/-([a-z])/g, (_, $1) => $1.toUpperCase());
+  return value.replace(/-([a-z])/gi, (_, $1) => $1.toUpperCase());
 }
 
 function ucFirst(value) {
