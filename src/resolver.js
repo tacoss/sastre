@@ -183,7 +183,18 @@ export default class Resolver {
     return dependencies;
   }
 
-  static typesOf(self, extend, properties, references) {
+  static typesOf(self, extend, properties, references, declaration) {
+    if (typeof properties === 'string') {
+      declaration = properties;
+      references = null;
+      properties = null;
+    }
+
+    if (typeof references === 'string') {
+      declaration = references;
+      references = null;
+    }
+
     const buffer = [];
     const groups = { path: [], props: {} };
     const definitions = self._container.types.map(x => camelCase(x.path.join('-')));
@@ -269,18 +280,21 @@ export default class Resolver {
       }
 
       const keys = Object.keys(groups.props[key].props);
+      const klass = declaration ? ucFirst(declaration) : 'Interface';
 
       keys.forEach(prop => {
         if (keys.length > 0) {
-          props.push(`  ${camelCase(prop)}: ${key}.${ucFirst(camelCase(prop))};\n`);
+          props.push(`  ${camelCase(prop)}: ${key}${klass}.${ucFirst(camelCase(prop))};\n`);
         }
       });
 
       buffer.push({
-        type: key,
-        chunk: `export interface ${key}Interface${suffix} {${props.length > 0 ? `\n${props.join('')}` : ''}}`,
+        chunk: `/**\nModule declaration for \`${key}\` ${klass.toLowerCase()}.\n*/`,
       }, {
-        chunk: `declare namespace ${key} {${nest(groups.props[key], [key], typedefs, true)}}`,
+        type: key,
+        chunk: `export interface ${key}${klass}${suffix} {${props.length > 0 ? `\n${props.join('')}` : ''}}`,
+      }, {
+        chunk: `declare namespace ${key}${klass} {${nest(groups.props[key], [key], typedefs, true)}}`,
       });
     });
 
@@ -302,8 +316,8 @@ export default class Resolver {
     return this._typedefs;
   }
 
-  typesOf(extend, properties, references) {
-    return Resolver.typesOf(this, extend, properties, references);
+  typesOf(extend, properties, references, declaration) {
+    return Resolver.typesOf(this, extend, properties, references, declaration);
   }
 
   forEach(callback) {

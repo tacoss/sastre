@@ -143,9 +143,15 @@ import type { withDashesAnd as OtherTestWithDashesAndModule } from './OtherTest/
 import type { sub as TestSubModule } from './Test/sub';
 import type TestModule from './Test';
 import type ExampleModule from './Example';
+/**
+Module declaration for \`Example\` interface.
+*/
 // Example
 export interface ExampleInterface extends ExampleModule {}
 declare namespace Example {}
+/**
+Module declaration for \`Test\` interface.
+*/
 // Test
 export interface TestInterface extends TestModule {
   sub: Test.Sub;
@@ -155,13 +161,19 @@ declare namespace Test {
     nested: typeof TestSubNestedModule;
   }
 }
+/**
+Module declaration for \`OtherTest\` interface.
+*/
 // OtherTest
 export interface OtherTestInterface {
   withDashesAnd: OtherTest.WithDashesAnd;
 }
 declare namespace OtherTest {
-  export interface WithDashesAnd extends OtherTestWithDashesAndModule {}
+  export type WithDashesAnd = typeof OtherTestWithDashesAndModule;
 }
+/**
+Module declaration for \`Name\` interface.
+*/
 // Name
 export interface NameInterface {
   prop: Name.Prop;
