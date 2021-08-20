@@ -210,10 +210,12 @@ export default class Resolver {
 
         out += !out && path.length === 1 ? '\n' : '';
 
+        const doc = `/**\nDeclaration for \`${path.concat(key).join('.')}\` method.\n*/\n`;
+
         if (_interface && defined && !props) {
-          out += `${pre}export type ${ucFirst(camelCase(key))} = typeof ${def}Module;\n`;
+          out += `${doc}${pre}export type ${ucFirst(camelCase(key))} = typeof ${def}Module;\n`;
         } else {
-          out += _interface ? `${pre}export interface ${ucFirst(camelCase(key))}` : `${pre}${camelCase(key)}:`;
+          out += _interface ? `${doc}${pre}export interface ${ucFirst(camelCase(key))}` : `${doc}${pre}${camelCase(key)}:`;
 
           let ok;
           if (defined) {
@@ -284,6 +286,7 @@ export default class Resolver {
 
       keys.forEach(prop => {
         if (keys.length > 0) {
+          props.push(`/**\nThe \`${key}.${camelCase(prop)}\` object.\n*/\n`);
           props.push(`  ${camelCase(prop)}: ${key}${klass}.${ucFirst(camelCase(prop))};\n`);
         }
       });
@@ -293,6 +296,8 @@ export default class Resolver {
       }, {
         type: key,
         chunk: `export interface ${key}${klass}${suffix} {${props.length > 0 ? `\n${props.join('')}` : ''}}`,
+      }, {
+        chunk: `/**\nNamespace for \`${key}\` ${klass.toLowerCase()}.\n*/`,
       }, {
         chunk: `declare namespace ${key}${klass} {${nest(groups.props[key], [key], typedefs, true)}}`,
       });
