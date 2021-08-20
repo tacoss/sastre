@@ -210,7 +210,7 @@ export default class Resolver {
 
         out += !out && path.length === 1 ? '\n' : '';
 
-        const doc = `/**\nDeclaration for \`${path.concat(key).join('.')}\` method.\n*/\n`;
+        const doc = `/**\nDeclaration for \`${path.concat(key).join('.')}\` object.\n*/\n`;
 
         if (_interface && defined && !props) {
           out += `${doc}${pre}export type ${ucFirst(camelCase(key))} = typeof ${def}Module;\n`;
