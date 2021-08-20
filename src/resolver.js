@@ -282,12 +282,14 @@ export default class Resolver {
       }
 
       const keys = Object.keys(groups.props[key].props);
-      const klass = declaration ? ucFirst(declaration) : 'Interface';
+      const [schema, object] = declaration ? declaration.split(':') : ['interface'];
+      const klass = ucFirst(schema);
+      const sub = object ? ucFirst(object) : `${klass}Module`;
 
       keys.forEach(prop => {
         if (keys.length > 0) {
           props.push(`/**\nThe \`${key}.${camelCase(prop)}\` object.\n*/\n`);
-          props.push(`  ${camelCase(prop)}: ${key}${klass}.${ucFirst(camelCase(prop))};\n`);
+          props.push(`  ${camelCase(prop)}: ${key}${sub}.${ucFirst(camelCase(prop))};\n`);
         }
       });
 
@@ -299,7 +301,7 @@ export default class Resolver {
       }, {
         chunk: `/**\nNamespace for \`${key}\` ${klass.toLowerCase()}.\n*/`,
       }, {
-        chunk: `declare namespace ${key}${klass} {${nest(groups.props[key], [key], typedefs, true)}}`,
+        chunk: `export namespace ${key}${sub} {${nest(groups.props[key], [key], typedefs, true)}}`,
       });
     });
 
