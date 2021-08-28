@@ -262,7 +262,7 @@ export default class Resolver {
     });
 
     Object.keys(groups.props).forEach(key => {
-      const exts = (definitions.includes(key) ? [`${key}Module`] : []).concat(extend ? [extend] : []);
+      const exts = (definitions.includes(key) ? [`${key}Module`] : []).concat(extend || []);
       const suffix = exts.length > 0 ? ` extends ${exts.join(', ')}` : '';
       const props = [];
 
