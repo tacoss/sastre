@@ -144,7 +144,7 @@ async function watch(argv) {
 
     delete options.compilerOptions.incremental;
 
-    const basePath = path.dirname(configPath);
+    const basePath = path.resolve(path.dirname(configPath));
     const parsedConfig = ts.parseJsonConfigFileContent(options, ts.sys, basePath);
 
     reportWatchStatusChanged({ messageText: 'Starting typescript compilation...' });
