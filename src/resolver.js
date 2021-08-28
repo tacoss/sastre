@@ -183,17 +183,8 @@ export default class Resolver {
     return dependencies;
   }
 
-  static typesOf(self, extend, properties, references, declaration) {
-    if (typeof properties === 'string') {
-      declaration = properties;
-      references = null;
-      properties = null;
-    }
-
-    if (typeof references === 'string') {
-      declaration = references;
-      references = null;
-    }
+  static typesOf(self, options) {
+    const { extend, comments, properties, references, declaration } = options || {};
 
     const buffer = [];
     const groups = { path: [], props: {} };
@@ -210,7 +201,7 @@ export default class Resolver {
 
         out += !out && path.length === 1 ? '\n' : '';
 
-        const doc = `/**\nDeclaration for \`${path.concat(key).join('.')}\` object.\n*/\n`;
+        const doc = comments ? `/**\nDeclaration for \`${path.concat(key).join('.')}\` object.\n*/\n` : '';
 
         if (_interface && defined && !props) {
           out += `${doc}${pre}export type ${ucFirst(camelCase(key))} = typeof ${def}Module;\n`;
@@ -288,24 +279,26 @@ export default class Resolver {
 
       keys.forEach(prop => {
         if (keys.length > 0) {
-          props.push(`/**\nThe \`${key}.${camelCase(prop)}\` object.\n*/\n`);
+          if (comments) {
+            props.push(`/**\nThe \`${key}.${camelCase(prop)}\` object.\n*/\n`);
+          }
           props.push(`  ${camelCase(prop)}: ${key}${sub}.${ucFirst(camelCase(prop))};\n`);
         }
       });
 
-      buffer.push({
+      buffer.push(comments && {
         chunk: `/**\nModule declaration for \`${key}\` ${klass.toLowerCase()}.\n*/`,
       }, {
         type: key,
         chunk: `export interface ${key}${klass}${suffix} {${props.length > 0 ? `\n${props.join('')}` : ''}}`,
-      }, {
+      }, comments && {
         chunk: `/**\nNamespace for \`${key}\` ${klass.toLowerCase()}.\n*/`,
       }, {
         chunk: `export namespace ${key}${sub} {${nest(groups.props[key], [key], typedefs, true)}}`,
       });
     });
 
-    return buffer;
+    return buffer.filter(Boolean);
   }
 
   get values() {
@@ -323,8 +316,8 @@ export default class Resolver {
     return this._typedefs;
   }
 
-  typesOf(extend, properties, references, declaration) {
-    return Resolver.typesOf(this, extend, properties, references, declaration);
+  typesOf(options) {
+    return Resolver.typesOf(this, options);
   }
 
   forEach(callback) {
