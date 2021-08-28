@@ -127,7 +127,9 @@ async function watch(argv) {
     esModuleInterop: true,
     isolatedModules: true,
     noUnusedLocals: true,
+    strictNullChecks: true,
     noUnusedParameters: true,
+    exactOptionalPropertyTypes: true,
     forceConsistentCasingInFileNames: true,
   };
 
