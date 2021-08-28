@@ -36,7 +36,7 @@
   "dependencies": {
     "fs-extra": "^10.0.0",
     "glob": "^7.1.2",
-    "global-or-local": "^0.1.5",
+    "global-or-local": "^0.1.6",
     "wargs": "^0.9.3"
   },
   "devDependencies": {
