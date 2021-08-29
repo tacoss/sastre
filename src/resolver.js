@@ -86,10 +86,15 @@ export default class Resolver {
       keys: [],
     };
 
+    const typeFiles = {};
     const entryFiles = glob
-      .sync('**/index.js', { cwd, nosort: true })
+      .sync('**/index.{ts,js}', { cwd, nosort: true })
       .sort((a, b) => a.split('/').length - b.split('/').length)
-      .filter(f => f !== 'index.js');
+      .filter(x => x !== 'index.js' && x !== 'index.ts');
+
+    entryFiles.forEach(file => {
+      if (file.includes('.ts')) typeFiles[file] = entryFiles.includes(file.replace('.ts', '.js'));
+    });
 
     const rootProvider = path.join(cwd, 'provider.js');
     const rootDependencies = Resolver.useFile(rootProvider);
@@ -99,11 +104,13 @@ export default class Resolver {
     }
 
     entryFiles.forEach(entry => {
+      if (typeFiles[entry]) return;
+
       const properties = entry.split('/');
       const value = ucFirst(camelCase(properties.shift()));
 
       const definitionFile = path.join(cwd, entry);
-      const definition = Resolver.loadFile(definitionFile);
+      const definition = entry.includes('.ts') ? Function : Resolver.loadFile(definitionFile);
 
       properties.pop();
 
