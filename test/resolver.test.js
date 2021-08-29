@@ -106,7 +106,7 @@ describe('Resolver', () => {
       });
 
       it('will collect a registry of modules when constructed', () => {
-        td.when(glob.sync('**/index.js', { cwd: '.', nosort: true }))
+        td.when(glob.sync('**/index.{ts,js}', { cwd: '.', nosort: true }))
           .thenReturn([
             'Name/prop/injectableMethod/index.js',
             'Name/prop/method/index.js',
@@ -188,7 +188,7 @@ export namespace NameInterfaceModule {
       });
 
       it('can skip the after-callback', () => {
-        td.when(glob.sync('**/index.js', { cwd: '.', nosort: true }))
+        td.when(glob.sync('**/index.{ts,js}', { cwd: '.', nosort: true }))
           .thenReturn([
             'Test/index.js',
           ]);
@@ -201,7 +201,7 @@ export namespace NameInterfaceModule {
       });
 
       it('should warn on unexpected providers', () => {
-        td.when(glob.sync('**/index.js', { cwd: '.', nosort: true }))
+        td.when(glob.sync('**/index.{ts,js}', { cwd: '.', nosort: true }))
           .thenReturn([
             'Test/provider.js',
           ]);
