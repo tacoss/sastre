@@ -119,6 +119,7 @@ async function watch(argv) {
   const isProd = process.env.NODE_ENV === 'production';
   const configPath = ts.findConfigFile('./', ts.sys.fileExists, 'tsconfig.json');
   const defaults = {
+    noEmit: argv.flags.emit === false,
     incremental: !isProd,
     skipLibCheck: isProd,
     target: 'ES2021',
@@ -147,7 +148,7 @@ async function watch(argv) {
     const basePath = path.resolve(path.dirname(configPath));
     const parsedConfig = ts.parseJsonConfigFileContent(options, ts.sys, basePath);
 
-    reportWatchStatusChanged({ messageText: 'Starting typescript compilation...' });
+    reportWatchStatusChanged({ messageText: argv.flags.emit === false ? 'Type-checking sources, just wait...' : 'Starting typescript compilation...' });
 
     if (parsedConfig.errors.length > 0) {
       parsedConfig.errors.forEach(err => {
@@ -165,7 +166,7 @@ async function watch(argv) {
       reportWatchStatusChanged(diagnostic);
     });
 
-    if (!(argv.flags.watch || argv.flags.verbose)) {
+    if (!(argv.flags.watch || argv.flags.verbose) && argv.flags.emit !== false) {
       info(`\r${host.changes.length} file${host.changes.length === 1 ? '' : 's'} written\n`);
     }
 
@@ -234,9 +235,10 @@ function reportWatchStatusChanged(diagnostic) {
 }
 
 const argv = wargs(process.argv.slice(2), {
-  boolean: 'cdbtwhV',
+  boolean: 'cdbtwhVE',
   string: 'ri',
   alias: {
+    E: 'no-emit',
     V: 'verbose',
     r: 'require',
     i: 'import',
@@ -266,6 +268,7 @@ Options:
   -w, --watch     Enable watch mode of sources
   -c, --clear     Clear screen between changes
   -b, --bail      Exits from build on any failure
+  -E, --no-emit   Do not write files, just check types
 
 TypeDefs:
   prop        Set prop as container, use PATH as directory
