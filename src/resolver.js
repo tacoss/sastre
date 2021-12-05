@@ -99,8 +99,8 @@ export default class Resolver {
     const rootProvider = path.join(cwd, 'provider.js');
     const rootDependencies = Resolver.useFile(rootProvider);
 
-    function injectDefinition(target, providerFile) {
-      return new Injector(target, assignProps({}, rootDependencies, Resolver.useFile(providerFile)));
+    function injectDefinition(target, providerFile, definitionFile) {
+      return new Injector(target, assignProps({}, rootDependencies, Resolver.useFile(providerFile)), path.relative('.', definitionFile));
     }
 
     entryFiles.forEach(entry => {
@@ -119,7 +119,7 @@ export default class Resolver {
 
       if (!resolverInfo.values[value]) {
         resolverInfo.values[value] = !properties.length
-          ? ((isInjectable && injectDefinition(definition, providerFile)) || definition)
+          ? ((isInjectable && injectDefinition(definition, providerFile, definitionFile)) || definition)
           : {};
       }
 
@@ -144,7 +144,7 @@ export default class Resolver {
 
         if (!target[propName]) {
           if (isInjectable && !properties.length) {
-            target[propName] = injectDefinition(definition, providerFile);
+            target[propName] = injectDefinition(definition, providerFile, definitionFile);
           } else {
             target = target[propName] = {};
           }

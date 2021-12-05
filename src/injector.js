@@ -34,7 +34,7 @@ function functionInjector(definition) {
 }
 
 export default class Injector {
-  constructor(definition, injectables) {
+  constructor(definition, injectables, definitionFile) {
     if (typeof definition !== 'function') {
       throw new Exception(`Cannot inject non-callable values, given ${inspect(definition)}`);
     }
@@ -55,6 +55,11 @@ export default class Injector {
       value: _isClass
         ? classInjector(definition)
         : functionInjector(definition),
+    });
+
+    Object.defineProperty(this, '_filepath', {
+      enumerable: false,
+      value: definitionFile,
     });
 
     Object.defineProperty(this, '_definition', {
@@ -114,7 +119,12 @@ export default class Injector {
           throw new Exception(`Missing '${key}' provider`);
         }
 
-        return values[key]();
+        const value = values[key]();
+
+        if (!value) {
+          throw new Exception(`Dependency '${key}' not given`);
+        }
+        return value
       },
     });
 
@@ -153,7 +163,11 @@ export default class Injector {
       };
     });
 
-    return wrap(proxy);
+    try {
+      return wrap(proxy);
+    } catch (e) {
+      console.debug(`${e.message} at ./${definition._filepath}`);
+    }
   }
 
   static use(resolver, definition) {
@@ -181,7 +195,11 @@ export default class Injector {
       });
     });
 
-    return wrap(proxy);
+    try {
+      return wrap(proxy);
+    } catch (e) {
+      console.debug(`${e.message} at ./${definition._filepath}`);
+    }
   }
 
   get isClass() {
