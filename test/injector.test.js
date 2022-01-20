@@ -170,11 +170,11 @@ describe('Injector', () => {
       });
 
       it('should fail if proxy cannot resolve the given provider', () => {
-        expect(() => {
-          Injector.bind({
-            values: {},
-          }, new Injector(ctx => [ctx.undef], {}));
-        }).to.throw("Missing 'undef' provider");
+        td.replace(console, 'debug', td.func('log'));
+        Injector.bind({
+          values: {},
+        }, new Injector(ctx => [ctx.undef], {}));
+        expect(td.explain(console.debug).callCount).to.eql(1);
       });
 
       it('should resolve again if getters are given', () => {
@@ -249,9 +249,9 @@ describe('Injector', () => {
           _factory: ctx => [ctx.fooBar],
         };
 
-        expect(() => {
-          Injector.use(fakeResolver, fakeDefinition);
-        }).to.throw('Invalid resolver, given {}');
+        td.replace(console, 'debug', td.func('log'));
+        Injector.use(fakeResolver, fakeDefinition);
+        expect(td.explain(console.debug).callCount).to.eql(1);
       });
     });
   });
