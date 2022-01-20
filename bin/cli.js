@@ -101,6 +101,10 @@ function build(argv) {
     const container = pick(entry, key);
     const directory = path.resolve(cwd, isProp ? '' : val);
 
+    if (!container) {
+      throw new TypeError(`Container '${key}' is missing for '${path.relative('.', directory)}' in [${Object.keys(entry).join(', ')}]`);
+    }
+
     push(container, param in argv.params ? path.join(directory, val) : directory);
   });
 
