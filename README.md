@@ -307,7 +307,7 @@ Use the provided CLI to generate those declarations out of your containers, e.g.
 sastre example/src/api -ti ../container :controllers :models -r module-alias/register
 ```
 
-> Run `sastre` without arguments to show all available options. TypeScript `>=4.4.x` is required to use the CLI.
+> Run `sastre --help` to show all available options. TypeScript `>=4.4.x` is required to use the CLI.
 
 The compiler would load any container from its path, if it contains a `typedefs` property it'll be used to write out the `index.d.ts` declaration.
 
