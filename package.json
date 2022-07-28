@@ -36,7 +36,7 @@
   "dependencies": {
     "fs-extra": "~8.1.0",
     "glob": "^7.1.2",
-    "global-or-local": "^0.1.6",
+    "global-or-local": "^0.1.7",
     "wargs": "^0.9.3"
   },
   "devDependencies": {
@@ -49,7 +49,7 @@
     "module-alias": "^2.1.0",
     "nyc": "^15.0.0",
     "postcss": ">=8.2.10",
-    "sqlite3": "^4.2.0",
+    "sqlite3": "^5.0.10",
     "testdouble": "^3.8.2",
     "typescript": "^4.4.6"
   },
