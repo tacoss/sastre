@@ -24,7 +24,7 @@ class ModelsResolver {
     DB.ready(() => {
       Object.keys(DB.$refs).forEach(k => $.get(k, true));
     });
-    return $;
+    return $.resolve();
   }
 }
 

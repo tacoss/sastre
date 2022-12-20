@@ -4,11 +4,6 @@ const ControllersResolver = require('./controllers');
 const ModelsResolver = require('./models');
 
 class Container {
-  constructor() {
-    this.controllers = new ControllersResolver(this, path.resolve(__dirname, '../api/controllers'));
-    this.models = new ModelsResolver(this, path.resolve(__dirname, '../api/models'));
-  }
-
   getController(name) {
     return this.controllers.get(name);
   }
@@ -16,6 +11,14 @@ class Container {
   getModel(name) {
     return this.models.get(name);
   }
+
+  async resolve() {
+    [this.controllers, this.models] = await Promise.all([
+      new ControllersResolver(this, path.resolve(__dirname, '../api/controllers')),
+      new ModelsResolver(this, path.resolve(__dirname, '../api/models')),
+    ]);
+    return this;
+  }
 }
 
-module.exports = new Container();
+module.exports = new Container().resolve();

@@ -1,12 +1,18 @@
 const td = require('testdouble');
 const { expect } = require('chai');
-const container = require('@src/container'); // eslint-disable-line
-
-const User = container.getModel('User');
 
 /* global it, describe, beforeEach, afterEach */
 
 describe('User', () => {
+  let container;
+  let User;
+  beforeEach(async () => {
+    if (!container) {
+      container = await require('@src/container');
+    }
+    User = container.getModel('User');
+  });
+
   describe('#add', () => {
     let createCallback;
     let saveCallback;

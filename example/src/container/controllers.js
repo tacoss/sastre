@@ -6,7 +6,7 @@ class ControllersResolver {
       console.log('Custom logic here, e.g. GRPC IoC (aka front-controller)', name);
 
       return definition;
-    });
+    }).resolve();
   }
 }
 
