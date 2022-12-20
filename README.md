@@ -78,9 +78,11 @@ Above:
 
 Since `0.1.1` module and method names are converted from `dash-case` to `PascalCase` and `camelCase` respectively. This would help to alleviate issues with case-sensitiveness on some environments, especially when doing cross-environment development, e.g. Linux vs OSx.
 
+Since `0.3.0` module resolution supports both CommonJS and ESM,  the `Resolver` class now has a `resolve()` method that works asynchronously. This would help to load ESM modules and CJS without issues, previous code must be updated to use this method.
+
 ## Containers
 
-An instantiated `Resolver` becomes a `container` instance, you name it:
+An instantiated `Resolver` becomes a `container` instance once resolved, you name it:
 
 ```js
 const { Resolver } = require('sastre');
@@ -92,7 +94,10 @@ const optionalHooks = {
 
 const sourcesDirectory = `${__dirname}/lib`;
 
-const container = new Resolver(null, sourcesDirectory, optionalHooks);
+async function main() {
+  const container = await new Resolver(null, sourcesDirectory, optionalHooks).resolve();
+}
+main();
 ```
 
 You can access found modules through the `get()` method:

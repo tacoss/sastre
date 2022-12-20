@@ -58,6 +58,10 @@ export default class Resolver {
       rootContainer = undefined;
     }
 
+    if (directory.includes('file://')) {
+      directory = directory.substr(7).replace(/\/\w+\.[mc]?js$/, '');
+    }
+
     Object.defineProperty(this, '_directory', {
       enumerable: false,
       value: directory,
@@ -68,13 +72,13 @@ export default class Resolver {
       value: getDecorators(hooks, rootContainer),
     });
 
-    Object.defineProperty(this, '_container', {
+    Object.defineProperty(this, '_parent', {
       enumerable: false,
-      value: new Container(rootContainer, Resolver.scanFiles(directory, this._decorators.before)),
+      value: rootContainer,
     });
   }
 
-  static scanFiles(cwd, cb) {
+  static async scanFiles(cwd, cb) {
     if (!fs.existsSync(cwd)) {
       throw new Error(`Invalid directory, given '${cwd}'`);
     }
@@ -88,29 +92,34 @@ export default class Resolver {
 
     const typeFiles = {};
     const entryFiles = glob
-      .sync('**/index.{ts,js}', { cwd, nosort: true })
+      .sync('**/index.{ts,js,cjs,mjs}', { cwd, nosort: true })
       .sort((a, b) => a.split('/').length - b.split('/').length)
-      .filter(x => x !== 'index.js' && x !== 'index.ts');
+      .filter(x => !['index.js', 'index.ts', 'index.cjs', 'index.mjs'].includes(x));
 
     entryFiles.forEach(file => {
-      if (file.includes('.ts')) typeFiles[file] = entryFiles.includes(file.replace('.ts', '.js'));
+      if (file.includes('.ts')) {
+        typeFiles[file] = entryFiles.includes(file.replace('.ts', '.mjs'))
+          || entryFiles.includes(file.replace('.ts', '.cjs'))
+          || entryFiles.includes(file.replace('.ts', '.js'));
+      }
     });
 
     const rootProvider = path.join(cwd, 'provider.js');
-    const rootDependencies = Resolver.useFile(rootProvider);
+    const rootDependencies = await Resolver.useFile(rootProvider);
 
-    function injectDefinition(target, providerFile, definitionFile) {
-      return new Injector(target, assignProps({}, rootDependencies, Resolver.useFile(providerFile)), path.relative('.', definitionFile));
+    async function injectDefinition(target, providerFile, definitionFile) {
+      const resolved = await Resolver.useFile(providerFile);
+      return new Injector(target, assignProps({}, rootDependencies, resolved), path.relative('.', definitionFile));
     }
 
-    entryFiles.forEach(entry => {
+    await Promise.all(entryFiles.map(async entry => {
       if (typeFiles[entry]) return;
 
       const properties = entry.split('/');
       const value = ucFirst(camelCase(properties.shift()));
 
       const definitionFile = path.join(cwd, entry);
-      const definition = entry.includes('.ts') ? Function : Resolver.loadFile(definitionFile);
+      const definition = entry.includes('.ts') ? Function : await Resolver.loadFile(definitionFile);
 
       properties.pop();
 
@@ -119,7 +128,7 @@ export default class Resolver {
 
       if (!resolverInfo.values[value]) {
         resolverInfo.values[value] = !properties.length
-          ? ((isInjectable && injectDefinition(definition, providerFile, definitionFile)) || definition)
+          ? await ((isInjectable && injectDefinition(definition, providerFile, definitionFile)) || definition)
           : {};
       }
 
@@ -144,7 +153,7 @@ export default class Resolver {
 
         if (!target[propName]) {
           if (isInjectable && !properties.length) {
-            target[propName] = injectDefinition(definition, providerFile, definitionFile);
+            target[propName] = await injectDefinition(definition, providerFile, definitionFile);
           } else {
             target = target[propName] = {};
           }
@@ -152,7 +161,7 @@ export default class Resolver {
           target = target[propName];
         }
       }
-    });
+    }));
 
     Object.keys(resolverInfo.values).forEach(prop => {
       const definition = resolverInfo.values[prop];
@@ -173,18 +182,19 @@ export default class Resolver {
     return resolverInfo;
   }
 
-  static loadFile(definition) {
-    const mod = require(definition);
+  static async loadFile(definition) {
+    const mod = await import(definition);
 
-    if (mod.__esModule) return mod.default;
-    return mod;
+    return mod.__esModule || mod.default ? mod.default : mod;
   }
 
-  static useFile(providerFile) {
+  static async useFile(providerFile) {
     const dependencies = {};
 
     if (fs.existsSync(providerFile)) {
-      assignProps(dependencies, Resolver.loadFile(providerFile));
+      const resolved = await Resolver.loadFile(providerFile);
+
+      assignProps(dependencies, resolved);
     }
 
     return dependencies;
@@ -195,7 +205,7 @@ export default class Resolver {
 
     const buffer = [];
     const groups = { path: [], props: {} };
-    const definitions = self._container.types.map(x => camelCase(x.path.join('-')));
+    const definitions = self.types.map(x => camelCase(x.path.join('-')));
 
     function nest(obj, path, typedefs, _interface) {
       const pre = path.map(() => '  ').join('');
@@ -235,7 +245,7 @@ export default class Resolver {
 
     const typedefs = [];
 
-    self._container.types.forEach(type => {
+    self.types.forEach(type => {
       const identifier = camelCase(type.path.join('-'));
 
       if (definitions.includes(identifier)) {
@@ -308,6 +318,10 @@ export default class Resolver {
     return buffer.filter(Boolean);
   }
 
+  get types() {
+    return this._container.types;
+  }
+
   get values() {
     return this._container.values;
   }
@@ -321,6 +335,20 @@ export default class Resolver {
       this._typedefs = this.typesOf().map(x => x.chunk).join('\n');
     }
     return this._typedefs;
+  }
+
+  async resolve(callback) {
+    const result = await Resolver.scanFiles(this._directory, this._decorators.before);
+
+    Object.defineProperty(this, '_container', {
+      enumerable: false,
+      value: new Container(this._parent, result),
+    });
+
+    if (callback) {
+      await callback(this);
+    }
+    return this;
   }
 
   typesOf(options) {

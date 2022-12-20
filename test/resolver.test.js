@@ -53,7 +53,7 @@ describe('Resolver', () => {
         td.replace(Resolver, 'scanFiles', scanCallback);
 
         td.when(Resolver.scanFiles(cwd, decoratorInput))
-          .thenReturn({
+          .thenResolve({
             registry: {
               foo,
             },
@@ -63,9 +63,8 @@ describe('Resolver', () => {
           });
       });
 
-      it('should work as expected', () => {
-        expect(new Resolver(cwd)._container.registry).to.be.deep.eql({ foo });
-        expect(new Resolver(cwd)._container.values).to.be.deep.eql({ foo: Foo });
+      it('should have no _container', () => {
+        expect(new Resolver(cwd)._container).to.be.undefined;
       });
 
       it('can receive context as first arg', () => {
@@ -91,8 +90,8 @@ describe('Resolver', () => {
     });
 
     describe('loadFile', () => {
-      it('is just a wrapper for require() calls', () => {
-        expect(Resolver.loadFile('util')).to.be.eql(require('util'));
+      it('is just a wrapper for import() calls', async () => {
+        expect(await Resolver.loadFile('util')).to.be.eql(require('util'));
       });
     });
 
@@ -101,12 +100,18 @@ describe('Resolver', () => {
         td.when(fs.existsSync('.')).thenReturn(true);
       });
 
-      it('will fail on invalid directories', () => {
-        expect(() => new Resolver('_')).to.throw("Invalid directory, given '_'");
+      it('will fail on invalid directories', async () => {
+        let error;
+        try {
+          await new Resolver('_').resolve();
+        } catch (e) {
+          error = e;
+        }
+        expect(error.message).to.eql("Invalid directory, given '_'");
       });
 
-      it('will collect a registry of modules when constructed', () => {
-        td.when(glob.sync('**/index.{ts,js}', { cwd: '.', nosort: true }))
+      it('will collect a registry of modules when constructed', async () => {
+        td.when(glob.sync(td.matchers.isA(String), { cwd: '.', nosort: true }))
           .thenReturn([
             'Name/prop/injectableMethod/index.js',
             'Name/prop/method/index.js',
@@ -120,32 +125,42 @@ describe('Resolver', () => {
         td.replace(Resolver, 'useFile', useCallback);
         td.replace(Resolver, 'loadFile', loadCallback);
 
-        td.when(Resolver.loadFile('./Name/prop/injectableMethod/index.js')).thenReturn(ctx => () => ctx.undef);
-        td.when(Resolver.loadFile('./Name/prop/method/index.js')).thenReturn(function method() {});
-        td.when(Resolver.loadFile('./Example/index.js')).thenReturn(class Example {});
-        td.when(Resolver.loadFile('./Test/index.js')).thenReturn({});
-        td.when(Resolver.loadFile('./Test/sub/index.js')).thenReturn(function sub() {});
-        td.when(Resolver.loadFile('./Test/sub/nested/index.js')).thenReturn(function nested() {});
-        td.when(Resolver.loadFile('./other-test/with-dashes-and/such-things.js')).thenReturn(function suchThings() {});
+        td.when(Resolver.loadFile('./Name/prop/injectableMethod/index.js')).thenResolve(ctx => () => ctx.undef);
+        td.when(Resolver.loadFile('./Name/prop/method/index.js')).thenResolve(function method() {});
+        td.when(Resolver.loadFile('./Example/index.js')).thenResolve(class Example {});
+        td.when(Resolver.loadFile('./Test/index.js')).thenResolve({});
+        td.when(Resolver.loadFile('./Test/sub/index.js')).thenResolve(function sub() {});
+        td.when(Resolver.loadFile('./Test/sub/nested/index.js')).thenResolve(function nested() {});
+        td.when(Resolver.loadFile('./other-test/with-dashes-and/such-things.js')).thenResolve(function suchThings() {});
 
         td.when(Resolver.useFile('./provider.js'))
-          .thenReturn({
+          .thenResolve({
             getTest() {},
             getGlobal() {},
           });
 
-        const container = new Resolver('.');
+        const container = await new Resolver('.').resolve();
+
+        expect(container._decorators.before).not.to.be.undefined;
+        expect(container._decorators.after).not.to.be.undefined;
+        expect(container._container.values.Example).not.to.be.undefined;
+        expect(container._container.values.Name).not.to.be.undefined;
+        expect(container._container.registry.Example).not.to.be.undefined;
+        expect(container._container.registry.Name.prop.injectableMethod).not.to.be.undefined;
+        expect(container._container.registry.Name.prop.method).not.to.be.undefined;
+        expect(container._container.registry['other-test']).to.be.undefined;
+        expect(container._container.registry.otherTest).to.be.undefined;
+        expect(container._container.registry.OtherTest).not.to.be.undefined;
+        expect(container._container.registry.OtherTest.withDashesAnd).not.to.be.undefined;
+
         expect(Resolver.typesOf(container, { references: true }).map(x => (x.type ? [`// ${x.type}`] : []).concat(x.chunk).join('\n')).join('\n')).to.eql(`
+import type ExampleModule from './Example';
+import type TestModule from './Test';
 import type { nested as TestSubNestedModule } from './Test/sub/nested';
 import type { method as NamePropMethodModule } from './Name/prop/method';
 import type { injectableMethod as NamePropInjectableMethodModule } from './Name/prop/injectableMethod';
 import type { withDashesAnd as OtherTestWithDashesAndModule } from './OtherTest/with-dashes-and';
 import type { sub as TestSubModule } from './Test/sub';
-import type TestModule from './Test';
-import type ExampleModule from './Example';
-// Example
-export interface ExampleInterface extends ExampleModule {}
-export namespace ExampleInterfaceModule {}
 // Test
 export interface TestInterface extends TestModule {
   sub: TestInterfaceModule.Sub;
@@ -172,36 +187,29 @@ export namespace NameInterfaceModule {
     method: typeof NamePropMethodModule;
   }
 }
+// Example
+export interface ExampleInterface extends ExampleModule {}
+export namespace ExampleInterfaceModule {}
 `.trim());
-
-        expect(container._decorators.before).not.to.be.undefined;
-        expect(container._decorators.after).not.to.be.undefined;
-        expect(container._container.values.Example).not.to.be.undefined;
-        expect(container._container.values.Name).not.to.be.undefined;
-        expect(container._container.registry.Example).not.to.be.undefined;
-        expect(container._container.registry.Name.prop.injectableMethod).not.to.be.undefined;
-        expect(container._container.registry.Name.prop.method).not.to.be.undefined;
-        expect(container._container.registry['other-test']).to.be.undefined;
-        expect(container._container.registry.otherTest).to.be.undefined;
-        expect(container._container.registry.OtherTest).not.to.be.undefined;
-        expect(container._container.registry.OtherTest.withDashesAnd).not.to.be.undefined;
       });
 
-      it('can skip the after-callback', () => {
-        td.when(glob.sync('**/index.{ts,js}', { cwd: '.', nosort: true }))
+      it('can skip the after-callback', async () => {
+        td.when(glob.sync(td.matchers.isA(String), { cwd: '.', nosort: true }))
           .thenReturn([
             'Test/index.js',
           ]);
 
         td.replace(Resolver, 'loadFile', loadCallback);
 
-        td.when(Resolver.loadFile('./Test/index.js')).thenReturn(class Test {});
+        td.when(Resolver.loadFile('./Test/index.js')).thenResolve(class Test {});
 
-        expect(() => Resolver.scanFiles('.')).not.to.throw();
+        const result = await Resolver.scanFiles('.');
+
+        expect(result.values.Test).not.to.be.undefined;
       });
 
-      it('should warn on unexpected providers', () => {
-        td.when(glob.sync('**/index.{ts,js}', { cwd: '.', nosort: true }))
+      it('should warn on unexpected providers', async () => {
+        td.when(glob.sync(td.matchers.isA(String), { cwd: '.', nosort: true }))
           .thenReturn([
             'Test/provider.js',
           ]);
@@ -210,7 +218,13 @@ export namespace NameInterfaceModule {
 
         td.when(fs.existsSync('./Test/provider.js')).thenReturn(true);
 
-        expect(() => new Resolver('.')).to.throw('Unexpected provider file, given ./Test/provider.js');
+        let error;
+        try {
+          await new Resolver('.').resolve();
+        } catch (e) {
+          error = e;
+        }
+        expect(error.message).to.eql('Unexpected provider file, given ./Test/provider.js');
       });
     });
   });
@@ -227,6 +241,7 @@ export namespace NameInterfaceModule {
       td.replace(Resolver, 'scanFiles', scanCallback);
       td.when(Resolver.scanFiles('.', td.matchers.anything()))
         .thenReturn({
+          types: -1,
           values: -1,
           registry: -1,
         });
@@ -266,15 +281,27 @@ export namespace NameInterfaceModule {
       });
     });
 
+    describe('resolve', () => {
+      it('should locate modules', async () => {
+        expect(new Resolver('.').resolve).not.to.throw();
+      });
+    })
+
+    describe('get types', () => {
+      it('should access container', async () => {
+        expect((await new Resolver('.').resolve()).types).to.eql(-1);
+      });
+    });
+
     describe('get values', () => {
-      it('should access container', () => {
-        expect(new Resolver('.').values).to.eql(-1);
+      it('should access container', async () => {
+        expect((await new Resolver('.').resolve()).values).to.eql(-1);
       });
     });
 
     describe('get registry', () => {
-      it('should access container', () => {
-        expect(new Resolver('.').registry).to.eql(-1);
+      it('should access container', async () => {
+        expect((await new Resolver('.').resolve()).registry).to.eql(-1);
       });
     });
   });

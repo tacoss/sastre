@@ -63,14 +63,19 @@ function check(host, argv) {
   return host;
 }
 
-function build(argv) {
+function load(mod) {
+  return import(mod).then(result => {
+    return result.default || result;
+  });
+}
+
+async function build(argv) {
   if (argv.flags.watch) return;
   if (!argv.flags.types) return;
 
   const cwd = argv._[0];
-  const entry = require(path.resolve(cwd, argv.flags.import));
+  const entry = await load(path.resolve(cwd, argv.flags.import));
   const input = argv._.slice(1).concat(Object.keys(argv.params));
-  const props = [];
   const files = [];
 
   function push(container, directory) {
@@ -290,13 +295,16 @@ if (argv.flags.help) {
   process.exit(1);
 }
 
-if (argv.flags.require) {
-  toArray(argv.flags.require).forEach(mod => {
-    require(mod.charAt() === '.' ? path.resolve(mod) : require.resolve(mod));
-  });
+async function preload() {
+  if (argv.flags.require) {
+    for (const mod of toArray(argv.flags.require)) {
+      await load(mod.charAt() === '.' ? path.resolve(mod) : require.resolve(mod));
+    }
+  }
 }
 
 Promise.resolve()
+  .then(() => preload())
   .then(() => build(argv))
   .then(skip => !skip && watch(argv))
   .catch(e => {
