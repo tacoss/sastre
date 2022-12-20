@@ -59,7 +59,7 @@ export default class Resolver {
     }
 
     if (directory.includes('file://')) {
-      directory = directory.substr(7).replace(/\/\w+\.[mc]?js$/, '');
+      directory = path.dirname(directory.substr(7));
     }
 
     Object.defineProperty(this, '_directory', {
