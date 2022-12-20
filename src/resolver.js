@@ -183,9 +183,10 @@ export default class Resolver {
   }
 
   static async loadFile(definition) {
-    const mod = await import(definition);
-
-    return mod.__esModule || mod.default ? mod.default : mod;
+    let mod = await import(definition);
+    mod = mod.__esModule ? mod.default : mod;
+    mod = mod.default || mod;
+    return mod;
   }
 
   static async useFile(providerFile) {
