@@ -98,12 +98,12 @@ async function build(argv) {
     push(entry, path.resolve(cwd));
   }
 
-  input.forEach(param => {
+  for (const param of input) {
     const isProp = param.charAt() !== ':';
     const key = !isProp ? param.substr(1): param;
     const val = argv.params[param] || key;
 
-    const container = pick(entry, key);
+    const container = await pick(entry, key);
     const directory = path.resolve(cwd, isProp ? '' : val);
 
     if (!container) {
@@ -111,7 +111,7 @@ async function build(argv) {
     }
 
     push(container, param in argv.params ? path.join(directory, val) : directory);
-  });
+  }
 
   files.forEach(([file, contents]) => {
     fs.outputFileSync(file, `${contents}\n`);
