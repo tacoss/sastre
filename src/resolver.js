@@ -112,7 +112,7 @@ export default class Resolver {
       return new Injector(target, assignProps({}, rootDependencies, resolved), path.relative('.', definitionFile));
     }
 
-    await Promise.all(entryFiles.map(async entry => {
+    for (const entry of entryFiles) {
       if (typeFiles[entry]) return;
 
       const properties = entry.split('/');
@@ -161,7 +161,7 @@ export default class Resolver {
           target = target[propName];
         }
       }
-    }));
+    }
 
     Object.keys(resolverInfo.values).forEach(prop => {
       const definition = resolverInfo.values[prop];
