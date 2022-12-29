@@ -113,7 +113,7 @@ export default class Resolver {
     }
 
     for (const entry of entryFiles) {
-      if (typeFiles[entry]) return;
+      if (typeFiles[entry]) continue;
 
       const properties = entry.split('/');
       const value = ucFirst(camelCase(properties.shift()));
