@@ -102,7 +102,10 @@ export default class Resolver {
       }
     });
 
-    const rootProvider = path.join(cwd, 'provider.js');
+    const provider = `provider.${['cjs', 'mjs']
+      .find(x => fs.existsSync(path.join(cwd, `provider.${x}`))) || 'js'}`;
+
+    const rootProvider = path.join(cwd, provider);
     const rootDependencies = await Resolver.useFile(rootProvider);
 
     async function injectDefinition(target, providerFile, definitionFile) {
@@ -121,7 +124,7 @@ export default class Resolver {
 
       properties.pop();
 
-      const providerFile = path.join(cwd, value, properties.concat('provider.js').join('/'));
+      const providerFile = path.join(cwd, value, properties.concat(provider).join('/'));
       const isInjectable = typeof definition === 'function';
 
       if (!resolverInfo.values[value]) {
