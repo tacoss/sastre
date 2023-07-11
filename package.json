@@ -43,7 +43,6 @@
     "codecov": "^3.0.2",
     "esbuild": "^0.18.11",
     "esm": ">=3.1.0",
-    "fast-glob": "^3.3.0",
     "json-schema-sequelizer": "^0.25.1",
     "mocha": "^10.2.0",
     "module-alias": "^2.1.0",

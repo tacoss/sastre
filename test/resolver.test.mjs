@@ -18,7 +18,6 @@ describe('Resolver', () => {
   describe('static methods', () => {
     const fs = require('fs');
     const path = require('path');
-    const glob = require('fast-glob');
 
     let existsCallback;
     let globCallback;
@@ -29,13 +28,13 @@ describe('Resolver', () => {
       loadCallback = td.func('Resolver.loadFile');
       useCallback = td.func('Resolver.useFile');
       existsCallback = td.func('fs.existsSync');
-      globCallback = td.func('glob.sync');
+      globCallback = td.func('globSync');
 
       td.replace(fs, 'existsSync', existsCallback);
       td.replace(path, 'join', function join() {
         return Array.prototype.slice.call(arguments).join('/');
       });
-      td.replace(glob, 'sync', globCallback);
+      td.replace(Resolver, 'searchFiles', globCallback);
     });
 
     describe('constructor', () => {
@@ -114,7 +113,7 @@ describe('Resolver', () => {
       });
 
       it('will collect a registry of modules when constructed', async () => {
-        td.when(glob.sync(td.matchers.isA(String), { cwd: '.', nosort: true }))
+        td.when(Resolver.searchFiles(td.matchers.isA(String), true))
           .thenReturn([
             'Name/prop/injectableMethod/index.js',
             'Name/prop/method/index.js',
@@ -197,7 +196,7 @@ export namespace NameInterfaceModule {
       });
 
       it('can skip the after-callback', async () => {
-        td.when(glob.sync(td.matchers.isA(String), { cwd: '.', nosort: true }))
+        td.when(Resolver.searchFiles(td.matchers.isA(String), true))
           .thenReturn([
             'Test/index.js',
           ]);
@@ -212,7 +211,7 @@ export namespace NameInterfaceModule {
       });
 
       it('should warn on unexpected providers', async () => {
-        td.when(glob.sync(td.matchers.isA(String), { cwd: '.', nosort: true }))
+        td.when(Resolver.searchFiles(td.matchers.isA(String), true))
           .thenReturn([
             'Test/provider.js',
           ]);

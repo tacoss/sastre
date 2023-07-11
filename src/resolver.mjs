@@ -1,4 +1,3 @@
-import glob from 'fast-glob';
 import path from 'path';
 import fs from 'fs';
 
@@ -91,8 +90,7 @@ export default class Resolver {
     };
 
     const typeFiles = {};
-    const entryFiles = glob
-      .sync('**/index.{ts,js,cjs,mjs}', { cwd, nosort: true })
+    const entryFiles = Resolver.searchFiles(cwd, true)
       .sort((a, b) => a.split('/').length - b.split('/').length)
       .filter(x => !['index.js', 'index.ts', 'index.cjs', 'index.mjs'].includes(x));
 
@@ -199,6 +197,24 @@ export default class Resolver {
     }
 
     return dependencies;
+  }
+
+  static searchFiles(cwd, flat) {
+    const filter = /^index\.(?:ts|[cm]?js)$/;
+    const entries = fs.readdirSync(cwd);
+    const results = [];
+
+    entries.forEach(file => {
+      const dir = `${cwd}/${file}`;
+      const stat = fs.statSync(dir);
+
+      if (stat && stat.isDirectory()) {
+        results.push(...Resolver.searchFiles(dir));
+      } else if (filter.test(file)) {
+        results.push(dir);
+      }
+    });
+    return flat ? results.map(x => path.relative(cwd, x)) : results;
   }
 
   static typesOf(self, options) {
