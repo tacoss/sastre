@@ -69,12 +69,19 @@ function load(mod) {
   });
 }
 
+function resolve(from, to) {
+  if (fs.existsSync(to)) {
+    return path.resolve(to);
+  }
+  return path.resolve(from, to);
+}
+
 async function build(argv) {
   if (argv.flags.watch) return;
   if (!argv.flags.types) return;
 
   const cwd = argv._[0];
-  const entry = await load(path.resolve(cwd, argv.flags.import));
+  const entry = await load(resolve(cwd, argv.flags.import));
   const input = argv._.slice(1).concat(Object.keys(argv.params));
   const files = [];
 
