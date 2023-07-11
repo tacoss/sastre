@@ -1,11 +1,11 @@
-import td from 'testdouble';
+import * as td from 'testdouble';
 import { expect } from 'chai';
 import { inspect } from 'util';
 
 /* eslint-disable no-unused-expressions */
 /* eslint-disable no-eval */
 
-import Injector from '../src/injector';
+import Injector from '../src/injector.mjs';
 
 /* global it, describe, afterEach, beforeEach */
 

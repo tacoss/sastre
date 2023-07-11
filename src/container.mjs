@@ -1,6 +1,6 @@
 import { inspect } from 'util';
-import Exception from './exception';
-import Injector from './injector';
+import Exception from './exception.mjs';
+import Injector from './injector.mjs';
 
 export default class Container {
   constructor(rootContainer, dependencies) {

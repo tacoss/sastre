@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import Exception from './exception';
+import Exception from './exception.mjs';
 
 const RESOLVED_STATE = Symbol('@@Resolved');
 const IS_INJECTABLE = Symbol('@@Injector');

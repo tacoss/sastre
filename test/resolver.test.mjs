@@ -1,9 +1,12 @@
-import td from 'testdouble';
+import * as td from 'testdouble';
 import { expect } from 'chai';
+import { createRequire } from 'module';
 
 /* eslint-disable no-unused-expressions */
 
-import Resolver from '../src/resolver';
+import Resolver from '../src/resolver.mjs';
+
+const require = createRequire(import.meta.url);
 
 /* global it, describe, beforeEach, afterEach */
 
@@ -15,7 +18,7 @@ describe('Resolver', () => {
   describe('static methods', () => {
     const fs = require('fs');
     const path = require('path');
-    const glob = require('glob');
+    const glob = require('fast-glob');
 
     let existsCallback;
     let globCallback;

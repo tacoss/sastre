@@ -1,10 +1,10 @@
-import glob from 'glob';
+import glob from 'fast-glob';
 import path from 'path';
 import fs from 'fs';
 
-import Exception from './exception';
-import Injector from './injector';
-import Container from './container';
+import Injector from './injector.mjs';
+import Container from './container.mjs';
+import Exception from './exception.mjs';
 
 const ALLOWED_HOOKS = ['before', 'after'];
 

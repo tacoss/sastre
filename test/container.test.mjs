@@ -1,10 +1,10 @@
-import td from 'testdouble';
+import * as td from 'testdouble';
 import { expect } from 'chai';
 
 /* eslint-disable no-unused-expressions */
 
-import Container from '../src/container';
-import Injector from '../src/injector';
+import Container from '../src/container.mjs';
+import Injector from '../src/injector.mjs';
 
 /* global it, describe, beforeEach, afterEach */
 

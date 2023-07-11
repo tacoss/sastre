@@ -1,5 +1,5 @@
 import { inspect } from 'util';
-import Exception from './exception';
+import Exception from './exception.mjs';
 
 export default class Chainable {
   constructor(context, middleware) {

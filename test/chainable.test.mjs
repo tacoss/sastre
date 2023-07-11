@@ -1,10 +1,10 @@
-import td from 'testdouble';
+import * as td from 'testdouble';
 import { expect } from 'chai';
 
 /* eslint-disable no-unused-expressions */
 
-import Chainable from '../src/chainable';
-import Container from '../src/container';
+import Chainable from '../src/chainable.mjs';
+import Container from '../src/container.mjs';
 
 /* global it, describe */
 
