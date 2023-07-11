@@ -10,6 +10,9 @@
   "bin": {
     "sastre": "bin/cli"
   },
+  "engines": {
+    "node": "*"
+  },
   "scripts": {
     "dev": "npm run test -- -w",
     "mocha": "_mocha --exit --colors --recursive -bR spec",
