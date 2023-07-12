@@ -137,10 +137,12 @@ export default class Resolver {
         throw new Exception(`Unexpected provider file, given ${providerFile}`);
       }
 
+      const tsFile = entry.replace(/\.\w+$/, '.ts');
+
       resolverInfo.types.push({
         path: [value].concat(properties.slice()),
         index: entry.split('/').pop(),
-        tscript: typeFiles[entry] || entry.includes('.ts'),
+        tscript: typeFiles[tsFile] || entry.includes('.ts'),
         injectable: isInjectable,
       });
 
