@@ -139,6 +139,8 @@ export default class Resolver {
 
       resolverInfo.types.push({
         path: [value].concat(properties.slice()),
+        index: entry.split('/').pop(),
+        tscript: entry.includes('.ts'),
         injectable: isInjectable,
       });
 
@@ -274,7 +276,9 @@ export default class Resolver {
 
       if (type.injectable && type.path.length > 1) {
         buffer.unshift({
-          chunk: `import type { ${camelCase(type.path[type.path.length - 1])} as ${identifier}Module } from './${type.path.join('/')}';`,
+          chunk: !type.tscript
+            ? `import ${identifier}Module from './${type.path.concat(type.index).join('/')}';`
+            : `import type { ${camelCase(type.path[type.path.length - 1])} as ${identifier}Module } from './${type.path.join('/')}';`,
         });
       } else if (typeof references === 'function') {
         buffer.unshift({

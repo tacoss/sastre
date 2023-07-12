@@ -120,7 +120,7 @@ describe('Resolver', () => {
             'Example/index.js',
             'Test/index.js',
             'Test/sub/index.js',
-            'Test/sub/nested/index.js',
+            'Test/sub/nested/index.ts',
             'other-test/with-dashes-and/such-things.js',
           ]);
 
@@ -132,7 +132,7 @@ describe('Resolver', () => {
         td.when(Resolver.loadFile('./Example/index.js')).thenResolve(class Example {});
         td.when(Resolver.loadFile('./Test/index.js')).thenResolve({});
         td.when(Resolver.loadFile('./Test/sub/index.js')).thenResolve(function sub() {});
-        td.when(Resolver.loadFile('./Test/sub/nested/index.js')).thenResolve(function nested() {});
+        td.when(Resolver.loadFile('./Test/sub/nested/index.ts')).thenResolve(function nested() {});
         td.when(Resolver.loadFile('./other-test/with-dashes-and/such-things.js')).thenResolve(function suchThings() {});
 
         td.when(Resolver.useFile('./provider.js'))
@@ -157,10 +157,10 @@ describe('Resolver', () => {
 
         expect(Resolver.typesOf(container, { references: true }).map(x => (x.type ? [`// ${x.type}`] : []).concat(x.chunk).join('\n')).join('\n')).to.eql(`
 import type { nested as TestSubNestedModule } from './Test/sub/nested';
-import type { method as NamePropMethodModule } from './Name/prop/method';
-import type { injectableMethod as NamePropInjectableMethodModule } from './Name/prop/injectableMethod';
-import type { withDashesAnd as OtherTestWithDashesAndModule } from './OtherTest/with-dashes-and';
-import type { sub as TestSubModule } from './Test/sub';
+import NamePropMethodModule from './Name/prop/method/index.js';
+import NamePropInjectableMethodModule from './Name/prop/injectableMethod/index.js';
+import OtherTestWithDashesAndModule from './OtherTest/with-dashes-and/such-things.js';
+import TestSubModule from './Test/sub/index.js';
 import type TestModule from './Test';
 import type ExampleModule from './Example';
 // Example
