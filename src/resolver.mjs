@@ -140,7 +140,7 @@ export default class Resolver {
       resolverInfo.types.push({
         path: [value].concat(properties.slice()),
         index: entry.split('/').pop(),
-        tscript: entry.includes('.ts'),
+        tscript: typeFiles[entry] || entry.includes('.ts'),
         injectable: isInjectable,
       });
 
